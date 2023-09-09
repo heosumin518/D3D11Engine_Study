@@ -7,7 +7,35 @@
 #ifndef PCH_H
 #define PCH_H
 
-// 여기에 미리 컴파일하려는 헤더 추가
-#include "framework.h"
+// STL
+#include <vector>
+#include <string>
+using namespace std;
+
+// WIN
+#include <windows.h>
+#include <assert.h>
+
+// DirectX
+#include <d3d11.h>
+#include <d3dcompiler.h>
+#include <wrl.h>
+
+#include <directxtk/SimpleMath.h>
+//#include <DirectXMath.h>
+//using namespace DirectX;
+using namespace DirectX::SimpleMath;
+using namespace Microsoft::WRL;
+
+#pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "d3dcompiler.lib")
+
+
+#include "Types.h"
+#include "Values.h"
+#include "Structs.h"
+#include "Helper.h"
+
+#include "TimeSystem.h"
 
 #endif //PCH_H
