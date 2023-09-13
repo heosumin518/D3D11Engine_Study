@@ -53,7 +53,7 @@ protected:
 	ComPtr<ID3D11Buffer> m_indexBuffer = nullptr;
 	ComPtr<ID3D11Buffer> m_constantBuffer = nullptr;
 	vector<WORD> m_indices;
-	int m_indicesNum;	// 인덱스 개수
+	int m_indicesNum = 0;	// 인덱스 개수
 	// VS
 	ComPtr<ID3D11VertexShader> m_vertexShader = nullptr;
 	ComPtr<ID3DBlob> m_vsBlob = nullptr;

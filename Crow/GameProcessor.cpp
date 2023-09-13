@@ -126,35 +126,38 @@ void GameProcessor::CreateGeometry()
 		HR_T(m_device->CreateBuffer(&vbDesc, &vbData, m_vertexBuffer.GetAddressOf()));
 	}
 
-	// IndexBuffer
+	if (m_indicesNum != 0)		// 02_RenderTriangle 에서 빌드가 되지 않아 이걸로 감쌈. 그거 외에는 의미없음.
 	{
-		// 인덱스 버퍼 정보 설정
-		D3D11_BUFFER_DESC ibDesc;
-		ZeroMemory(&ibDesc, sizeof(ibDesc));
-		ibDesc.Usage = D3D11_USAGE_IMMUTABLE;
-		ibDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-		ibDesc.ByteWidth = static_cast<uint32>(sizeof(WORD) * m_indices.size());
-		ibDesc.CPUAccessFlags = 0;
+		// IndexBuffer
+		{
+			// 인덱스 버퍼 정보 설정
+			D3D11_BUFFER_DESC ibDesc;
+			ZeroMemory(&ibDesc, sizeof(ibDesc));
+			ibDesc.Usage = D3D11_USAGE_IMMUTABLE;
+			ibDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+			ibDesc.ByteWidth = static_cast<uint32>(sizeof(WORD) * m_indices.size());
+			ibDesc.CPUAccessFlags = 0;
 
-		// 인덱스 버퍼 생성
-		D3D11_SUBRESOURCE_DATA ibData;
-		ZeroMemory(&ibData, sizeof(ibData));
-		ibData.pSysMem = m_indices.data();		// 배열 데이터 할당.
-		HR_T(m_device->CreateBuffer(&ibDesc, &ibData, m_indexBuffer.GetAddressOf()));
-	}
+			// 인덱스 버퍼 생성
+			D3D11_SUBRESOURCE_DATA ibData;
+			ZeroMemory(&ibData, sizeof(ibData));
+			ibData.pSysMem = m_indices.data();		// 배열 데이터 할당.
+			HR_T(m_device->CreateBuffer(&ibDesc, &ibData, m_indexBuffer.GetAddressOf()));
+		}
 
-	// ConstantBuffer
-	{
-		// 상수 버퍼 정보 생성
-		D3D11_BUFFER_DESC cbDesc;
-		ZeroMemory(&cbDesc, sizeof(cbDesc));
-		cbDesc.Usage = D3D11_USAGE_DEFAULT;		// cpu..
-		cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		cbDesc.ByteWidth = sizeof(ConstantBuffer);
-		cbDesc.CPUAccessFlags = 0;
+		// ConstantBuffer
+		{
+			// 상수 버퍼 정보 생성
+			D3D11_BUFFER_DESC cbDesc;
+			ZeroMemory(&cbDesc, sizeof(cbDesc));
+			cbDesc.Usage = D3D11_USAGE_DEFAULT;		// cpu..
+			cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+			cbDesc.ByteWidth = sizeof(ConstantBuffer);
+			cbDesc.CPUAccessFlags = 0;
 
-		// 상수 버퍼 생성
-		HR_T(m_device->CreateBuffer(&cbDesc, nullptr, m_constantBuffer.GetAddressOf()));
+			// 상수 버퍼 생성
+			HR_T(m_device->CreateBuffer(&cbDesc, nullptr, m_constantBuffer.GetAddressOf()));
+		}
 	}
 }
 
