@@ -23,7 +23,7 @@ using namespace std;
 
 #include <directxtk/SimpleMath.h>
 //#include <DirectXMath.h>
-//using namespace DirectX;
+using namespace DirectX;
 using namespace DirectX::SimpleMath;
 using namespace Microsoft::WRL;
 

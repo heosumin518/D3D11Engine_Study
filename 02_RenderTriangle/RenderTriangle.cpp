@@ -14,9 +14,9 @@ void RenderTriangle::Initialize()
 	SetViewport();
 
 	CreateGeometry();
-	CreateVS();
+	CreateVertexShader();
 	CreateInputLayout();
-	CreatePS();
+	CreatePixelShader();
 }
 
 void RenderTriangle::Update()
@@ -29,7 +29,7 @@ void RenderTriangle::Render()
 	RenderBegin();
 
 	// TO DO
-		// IA - VS - RS - PS - OM
+	// IA - VS - RS - PS - OM
 	{
 		uint32 stride = sizeof(Vertex);
 		uint32 offset = 0;

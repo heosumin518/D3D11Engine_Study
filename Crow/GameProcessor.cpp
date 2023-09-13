@@ -104,25 +104,63 @@ void GameProcessor::SetViewport()
 	m_viewport.MaxDepth = 1.f;
 }
 
-// Render() 에서 파이프라인에 바인딩할 버텍스 버퍼및 버퍼 정보 준비
+// Render() 에서 파이프라인에 바인딩할 버퍼 정보 준비
 void GameProcessor::CreateGeometry()
 {
 	// VertexData 는 자식 클래스에서 정의하자. TODO : 여긴 수정이 좀 필요할듯
 
 	// VertexBuffer
 	{
+		// 정점 버퍼 정보 설정
 		D3D11_BUFFER_DESC vbDesc;
 		ZeroMemory(&vbDesc, sizeof(vbDesc));
 		vbDesc.Usage = D3D11_USAGE_IMMUTABLE;		// GPU 만 읽을 수 있는 데이터로 설정한다.
 		vbDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;		// vertex buffer를 사용하는데 쓸 것이라는 걸 알려주기.
 		vbDesc.ByteWidth = static_cast<uint32>(sizeof(Vertex) * m_vertices.size());
+		vbDesc.CPUAccessFlags = 0;
 
 		// 정점 버퍼 생성
 		D3D11_SUBRESOURCE_DATA vbData;
 		ZeroMemory(&vbData, sizeof(vbData));
-		vbData.pSysMem = m_vertices.data();
+		vbData.pSysMem = m_vertices.data();		// 배열 데이터 할당.
 		HR_T(m_device->CreateBuffer(&vbDesc, &vbData, m_vertexBuffer.GetAddressOf()));
 	}
+
+	// IndexBuffer
+	{
+		// 인덱스 버퍼 정보 설정
+		D3D11_BUFFER_DESC ibDesc;
+		ZeroMemory(&ibDesc, sizeof(ibDesc));
+		ibDesc.Usage = D3D11_USAGE_IMMUTABLE;
+		ibDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		ibDesc.ByteWidth = static_cast<uint32>(sizeof(WORD) * m_indices.size());
+		ibDesc.CPUAccessFlags = 0;
+
+		// 인덱스 버퍼 생성
+		D3D11_SUBRESOURCE_DATA ibData;
+		ZeroMemory(&ibData, sizeof(ibData));
+		ibData.pSysMem = m_indices.data();		// 배열 데이터 할당.
+		HR_T(m_device->CreateBuffer(&ibDesc, &ibData, m_indexBuffer.GetAddressOf()));
+	}
+
+	// ConstantBuffer
+	{
+		// 상수 버퍼 정보 생성
+		D3D11_BUFFER_DESC cbDesc;
+		ZeroMemory(&cbDesc, sizeof(cbDesc));
+		cbDesc.Usage = D3D11_USAGE_DEFAULT;		// cpu..
+		cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		cbDesc.ByteWidth = sizeof(ConstantBuffer);
+		cbDesc.CPUAccessFlags = 0;
+
+		// 상수 버퍼 생성
+		HR_T(m_device->CreateBuffer(&cbDesc, nullptr, m_constantBuffer.GetAddressOf()));
+	}
+}
+
+void GameProcessor::SetTransformMatrix()
+{
+	// TODO : 이걸 부모에다 해놓을까 아님 자식에다 해놓을까
 }
 
 // Render() 에서 파이프라인에 바인딩할 InputLayout 생성 	
@@ -139,14 +177,14 @@ void GameProcessor::CreateInputLayout()
 }
 
 // Render에서 파이프라인에 바인딩할  버텍스 셰이더 생성
-void GameProcessor::CreateVS()
+void GameProcessor::CreateVertexShader()
 {
 	HR_T(CompileShaderFromFile(L"VertexShader.hlsl", "VS", "vs_5_0", m_vsBlob));
 	HR_T(m_device->CreateVertexShader(m_vsBlob->GetBufferPointer(), m_vsBlob->GetBufferSize(), nullptr, m_vertexShader.GetAddressOf()));
 }
 
 // Render에서 파이프라인에 바인딩할 픽셀 셰이더 생성
-void GameProcessor::CreatePS()
+void GameProcessor::CreatePixelShader()
 {
 	HR_T(CompileShaderFromFile(L"PixelShader.hlsl", "PS", "ps_5_0", m_psBlob));
 	HR_T(m_device->CreatePixelShader(m_psBlob->GetBufferPointer(), m_psBlob->GetBufferSize(), nullptr, m_pixelShader.GetAddressOf()));

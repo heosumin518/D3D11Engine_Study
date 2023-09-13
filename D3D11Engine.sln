@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Crow", "Crow\Crow.vcxproj",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "02_RenderTriangle", "02_RenderTriangle\02_RenderTriangle.vcxproj", "{AEA46248-118E-425E-9FEF-EE4058ACCAF3}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "03_RenderCube", "03_RenderCube\03_RenderCube.vcxproj", "{5E00E5C9-8BB2-4938-812D-D4F6BAC5E8A2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -41,6 +43,14 @@ Global
 		{AEA46248-118E-425E-9FEF-EE4058ACCAF3}.Release|x64.Build.0 = Release|x64
 		{AEA46248-118E-425E-9FEF-EE4058ACCAF3}.Release|x86.ActiveCfg = Release|Win32
 		{AEA46248-118E-425E-9FEF-EE4058ACCAF3}.Release|x86.Build.0 = Release|Win32
+		{5E00E5C9-8BB2-4938-812D-D4F6BAC5E8A2}.Debug|x64.ActiveCfg = Debug|x64
+		{5E00E5C9-8BB2-4938-812D-D4F6BAC5E8A2}.Debug|x64.Build.0 = Debug|x64
+		{5E00E5C9-8BB2-4938-812D-D4F6BAC5E8A2}.Debug|x86.ActiveCfg = Debug|Win32
+		{5E00E5C9-8BB2-4938-812D-D4F6BAC5E8A2}.Debug|x86.Build.0 = Debug|Win32
+		{5E00E5C9-8BB2-4938-812D-D4F6BAC5E8A2}.Release|x64.ActiveCfg = Release|x64
+		{5E00E5C9-8BB2-4938-812D-D4F6BAC5E8A2}.Release|x64.Build.0 = Release|x64
+		{5E00E5C9-8BB2-4938-812D-D4F6BAC5E8A2}.Release|x86.ActiveCfg = Release|Win32
+		{5E00E5C9-8BB2-4938-812D-D4F6BAC5E8A2}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
