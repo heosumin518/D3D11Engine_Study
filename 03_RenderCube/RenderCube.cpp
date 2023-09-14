@@ -18,19 +18,29 @@ void RenderCube::Initialize()
 	CreateVertexShader();
 	CreateInputLayout();
 	CreatePixelShader();
+
+	CreateConstantBuffer();
 }
 
 void RenderCube::Update()
 {
 	GameProcessor::Update();
 
-	auto t = m_timer.TotalTime();
 
-	XMMATRIX spin = XMMatrixRotationZ(-t);
-	XMMATRIX orbit = XMMatrixRotationY(-t * 2.0f);
-	//XMMATRIX translate = XMMatrixTranslation(-4.0f, 0.0f, 0.0f);
-	XMMATRIX scale = XMMatrixScaling(0.7f, 0.7f, 0.7f);
-	m_world = scale * spin * orbit;
+	// 큐브 상하좌우 회전
+	{
+		auto t = m_timer.TotalTime();
+
+		XMMATRIX spin = XMMatrixRotationZ(-t);
+		XMMATRIX orbit = XMMatrixRotationY(-t * 2.0f);
+		//XMMATRIX translate = XMMatrixTranslation(-4.0f, 0.0f, 0.0f);
+		XMMATRIX scale = XMMatrixScaling(0.7f, 0.7f, 0.7f);
+		m_world = scale * spin * orbit;
+	}
+	
+
+	//m_world = XMMatrixRotationY(m_timer.TotalTime());
+	
 }
 
 void RenderCube::Render()
@@ -113,7 +123,7 @@ void RenderCube::CreateGeometry()
 void RenderCube::SetTransformMatrix()
 {
 	// 쉐이더에 전달할 데이터 설정
-// Initialize the world matrix
+	// Initialize the world matrix
 	m_world = ::XMMatrixIdentity();
 
 	// Initialize the view matrix

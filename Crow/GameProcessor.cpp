@@ -114,7 +114,7 @@ void GameProcessor::CreateGeometry()
 		// 정점 버퍼 정보 설정
 		D3D11_BUFFER_DESC vbDesc;
 		ZeroMemory(&vbDesc, sizeof(vbDesc));
-		vbDesc.Usage = D3D11_USAGE_IMMUTABLE;		// GPU 만 읽을 수 있는 데이터로 설정한다.
+		vbDesc.Usage = D3D11_USAGE_IMMUTABLE;		// GPU에서 read 만 가능한 데이터로 설정한다.
 		vbDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;		// vertex buffer를 사용하는데 쓸 것이라는 걸 알려주기.
 		vbDesc.ByteWidth = static_cast<uint32>(sizeof(Vertex) * m_vertices.size());
 		vbDesc.CPUAccessFlags = 0;
@@ -126,38 +126,21 @@ void GameProcessor::CreateGeometry()
 		HR_T(m_device->CreateBuffer(&vbDesc, &vbData, m_vertexBuffer.GetAddressOf()));
 	}
 
-	if (m_indicesNum != 0)		// 02_RenderTriangle 에서 빌드가 되지 않아 이걸로 감쌈. 그거 외에는 의미없음.
+	// IndexBuffer
 	{
-		// IndexBuffer
-		{
-			// 인덱스 버퍼 정보 설정
-			D3D11_BUFFER_DESC ibDesc;
-			ZeroMemory(&ibDesc, sizeof(ibDesc));
-			ibDesc.Usage = D3D11_USAGE_IMMUTABLE;
-			ibDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-			ibDesc.ByteWidth = static_cast<uint32>(sizeof(WORD) * m_indices.size());
-			ibDesc.CPUAccessFlags = 0;
+		// 인덱스 버퍼 정보 설정
+		D3D11_BUFFER_DESC ibDesc;
+		ZeroMemory(&ibDesc, sizeof(ibDesc));
+		ibDesc.Usage = D3D11_USAGE_IMMUTABLE;
+		ibDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		ibDesc.ByteWidth = static_cast<uint32>(sizeof(WORD) * m_indices.size());
+		ibDesc.CPUAccessFlags = 0;
 
-			// 인덱스 버퍼 생성
-			D3D11_SUBRESOURCE_DATA ibData;
-			ZeroMemory(&ibData, sizeof(ibData));
-			ibData.pSysMem = m_indices.data();		// 배열 데이터 할당.
-			HR_T(m_device->CreateBuffer(&ibDesc, &ibData, m_indexBuffer.GetAddressOf()));
-		}
-
-		// ConstantBuffer
-		{
-			// 상수 버퍼 정보 생성
-			D3D11_BUFFER_DESC cbDesc;
-			ZeroMemory(&cbDesc, sizeof(cbDesc));
-			cbDesc.Usage = D3D11_USAGE_DEFAULT;		// cpu..
-			cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-			cbDesc.ByteWidth = sizeof(ConstantBuffer);
-			cbDesc.CPUAccessFlags = 0;
-
-			// 상수 버퍼 생성
-			HR_T(m_device->CreateBuffer(&cbDesc, nullptr, m_constantBuffer.GetAddressOf()));
-		}
+		// 인덱스 버퍼 생성
+		D3D11_SUBRESOURCE_DATA ibData;
+		ZeroMemory(&ibData, sizeof(ibData));
+		ibData.pSysMem = m_indices.data();		// 배열 데이터 할당.
+		HR_T(m_device->CreateBuffer(&ibDesc, &ibData, m_indexBuffer.GetAddressOf()));
 	}
 }
 
@@ -191,4 +174,18 @@ void GameProcessor::CreatePixelShader()
 {
 	HR_T(CompileShaderFromFile(L"PixelShader.hlsl", "PS", "ps_5_0", m_psBlob));
 	HR_T(m_device->CreatePixelShader(m_psBlob->GetBufferPointer(), m_psBlob->GetBufferSize(), nullptr, m_pixelShader.GetAddressOf()));
+}
+
+void GameProcessor::CreateConstantBuffer()
+{
+	// 상수 버퍼 정보 생성
+	D3D11_BUFFER_DESC cbDesc;
+	ZeroMemory(&cbDesc, sizeof(cbDesc));
+	cbDesc.Usage = D3D11_USAGE_DEFAULT;
+	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;	// 상수 버퍼 용도로 활용
+	cbDesc.ByteWidth = sizeof(ConstantBuffer);
+	cbDesc.CPUAccessFlags = 0;
+
+	// 상수 버퍼 생성
+	HR_T(m_device->CreateBuffer(&cbDesc, nullptr, m_constantBuffer.GetAddressOf()));
 }

@@ -22,11 +22,14 @@ protected:
 	void CreateRenderTargetView();
 	void SetViewport();
 
-	virtual void CreateGeometry();
 	virtual void SetTransformMatrix();
+
+	virtual void CreateGeometry();
 	void CreateInputLayout();
-	void CreateVertexShader();
-	void CreatePixelShader();
+	virtual void CreateVertexShader();
+	virtual void CreatePixelShader();
+
+	void CreateConstantBuffer();
 
 protected:
 	UINT m_width;

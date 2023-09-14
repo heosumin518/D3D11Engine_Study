@@ -13,5 +13,7 @@ public:
 	virtual void Render() override;
 
 	virtual void CreateGeometry() override;
+	virtual void CreateVertexShader();
+	virtual void CreatePixelShader();
 };
 
