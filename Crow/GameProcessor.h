@@ -21,6 +21,7 @@ protected:
 	void CreateDeviceAndSwapChain();
 	void CreateRenderTargetView();
 	void SetViewport();
+	void CreateDepthStencilView();
 
 	virtual void SetTransformMatrix();
 
@@ -54,12 +55,14 @@ protected:
 	ComPtr<ID3D11Buffer> m_vertexBuffer = nullptr;
 	ComPtr<ID3D11InputLayout> m_inputLayout = nullptr;
 	ComPtr<ID3D11Buffer> m_indexBuffer = nullptr;
-	ComPtr<ID3D11Buffer> m_constantBuffer = nullptr;
 	vector<WORD> m_indices;
 	int m_indicesNum = 0;	// 인덱스 개수
 	// VS
 	ComPtr<ID3D11VertexShader> m_vertexShader = nullptr;
 	ComPtr<ID3DBlob> m_vsBlob = nullptr;
+
+	// RS
+	ComPtr<ID3D11DepthStencilView> m_depthStancilView = nullptr;
 
 	// PS
 	ComPtr<ID3D11PixelShader> m_pixelShader = nullptr;
@@ -69,6 +72,16 @@ protected:
 	Matrix m_world;			// 월드 좌표계 공간으로 변환을 위한 행렬
 	Matrix m_view;			// 카메라 좌표계 공간으로 변환을 위한 행렬
 	Matrix m_projection;	// 단위장치좌표계(Normalized Device Coordinate) 공간으로 변환을 위한 행렬.
+
+	// Scale Rotation Translate
+	TransformData m_transformData;
+	ComPtr<ID3D11Buffer> m_constantBuffer = nullptr;
+
+	Vector3 m_localPosition = { 0.f, 0.f, 0.f };
+	Vector3 m_localRotation = { 0.f, 0.f, 0.f };
+	Vector3 m_localScale = { 1.f, 1.f, 1.f };
+	
+
 	// camera
 	XMVECTOR m_eye;		// 월드 공간에서의 카메라 좌표(정점)
 	XMVECTOR m_at;		// 카메라의 시점에서 바라보는 지점의 좌표(정점)

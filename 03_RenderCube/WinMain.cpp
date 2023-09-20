@@ -7,6 +7,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_ LPWSTR    lpCmdLine,
 	_In_ int       nCmdShow)
 {
-	RenderCube renderCube(g_winSizeX, g_winSizeY, g_gameName);
+	RenderCube renderCube(1280, 1080, g_gameName);
 	return WinApp::Run(&renderCube, hInstance, nCmdShow);
 }

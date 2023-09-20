@@ -1,10 +1,17 @@
 #include "pch.h"
 #include "RenderCube.h"
 
+#include "WinApp.h"
+
 RenderCube::RenderCube(const int32& width, const int32& height, const std::wstring& name)
 	: GameProcessor(width, height, name)
 {
 
+}
+
+RenderCube::~RenderCube()
+{
+	UnInitImGUI();
 }
 
 void RenderCube::Initialize()
@@ -12,35 +19,71 @@ void RenderCube::Initialize()
 	CreateDeviceAndSwapChain();
 	CreateRenderTargetView();
 	SetViewport();
+	CreateDepthStencilView();
 
 	CreateGeometry();
-	SetTransformMatrix();
 	CreateVertexShader();
 	CreateInputLayout();
 	CreatePixelShader();
 
 	CreateConstantBuffer();
+
+	InitImGUI();
 }
 
 void RenderCube::Update()
 {
 	GameProcessor::Update();
 
+	auto t = m_timer.TotalTime();
 
-	// 큐브 상하좌우 회전
+	// set camera
 	{
-		auto t = m_timer.TotalTime();
+		m_eye = XMVectorSet(m_cameraPos[0], m_cameraPos[1], m_cameraPos[2], 0.0f);
+		m_at = XMVectorSet(m_cameraPos[0], m_cameraPos[1] + 1.0f, 100.0f, 0.0f);
+		m_up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
-		XMMATRIX spin = XMMatrixRotationZ(-t);
-		XMMATRIX orbit = XMMatrixRotationY(-t * 2.0f);
-		//XMMATRIX translate = XMMatrixTranslation(-4.0f, 0.0f, 0.0f);
-		XMMATRIX scale = XMMatrixScaling(0.7f, 0.7f, 0.7f);
-		m_world = scale * spin * orbit;
+		m_view = XMMatrixLookAtLH(m_eye, m_at, m_up);		// ViewTransform 행렬 구하기. XMMatrixLookToLH() 함수로도 구할 수 있음
+		m_projection = XMMatrixPerspectiveFovLH(m_cameraFOV / 180.0f * 3.14f , g_winSizeX / static_cast<FLOAT>(g_winSizeY), m_cameraNear, m_cameraFar);		// 0.01f, 100.0f 각각 near 와 far
 	}
-	
 
-	//m_world = XMMatrixRotationY(m_timer.TotalTime());
-	
+	// set Sun, Earth, Moon
+	{
+		// 1st Cube: Rotate around the origin
+		Matrix sunSpin = Matrix::CreateRotationY(-t);
+		Matrix translation1 = Matrix::CreateTranslation(m_sunPos[0], m_sunPos[1], m_sunPos[2]); //imgui 로 설정
+		m_world1 = sunSpin * translation1;
+
+		// 2nd Cube: Rotate around origin
+		Matrix earthSpin = Matrix::CreateRotationY(t * 7.0f);
+		//Matrix earthTranslate = Matrix::CreateTranslation(-4.0f, 0.0f, 0.0f);
+		Matrix earthTranslate = Matrix::CreateTranslation(m_earthPos[0], m_earthPos[1], m_earthPos[2]);
+		Matrix earthScale = Matrix::CreateScale(0.3f, 0.3f, 0.3f);
+		m_world2 = earthScale * earthSpin * earthTranslate * m_world1;
+
+		// 3rd
+		Matrix moonSpin = Matrix::CreateRotationY(-t * 6.0f);
+		Matrix moonTranslate = Matrix::CreateTranslation(m_moonPos[0], m_moonPos[1], m_moonPos[2]);
+		Matrix moonScale = Matrix::CreateScale(0.3f, 0.3f, 0.3f);
+		m_world3 = moonScale * moonSpin * moonTranslate * m_world2;
+	}
+
+	// 기존 행렬을 전치행렬로 만들어야 한다. // dx에서의 연산때문.
+	// 마지막에 transpose 함수로 전치를 한번만 하자. 월드 마다 하지말고.
+	{
+		m_transformData1.world = XMMatrixTranspose(m_world1);				
+		m_transformData1.view = XMMatrixTranspose(m_view);
+		m_transformData1.projection = XMMatrixTranspose(m_projection);
+
+		m_transformData2.world = XMMatrixTranspose(m_world2);				
+		m_transformData2.view = XMMatrixTranspose(m_view);
+		m_transformData2.projection = XMMatrixTranspose(m_projection);
+
+		m_transformData3.world = XMMatrixTranspose(m_world3);				
+		m_transformData3.view = XMMatrixTranspose(m_view);
+		m_transformData3.projection = XMMatrixTranspose(m_projection);
+	}
+
 }
 
 void RenderCube::Render()
@@ -49,12 +92,13 @@ void RenderCube::Render()
 
 	// TO DO
 
+
 	// Update variables
-	ConstantBuffer constantBuffer;
-	constantBuffer.world = XMMatrixTranspose(m_world);
-	constantBuffer.view = XMMatrixTranspose(m_view);
-	constantBuffer.projection = XMMatrixTranspose(m_projection);
-	m_deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &constantBuffer, 0, 0);
+	//ConstantBuffer constantBuffer;
+	//constantBuffer.world = XMMatrixTranspose(m_world);
+	//constantBuffer.view = XMMatrixTranspose(m_view);
+	//constantBuffer.projection = XMMatrixTranspose(m_projection);
+	//m_deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &constantBuffer, 0, 0);
 
 	// IA - VS - RS - PS - OM
 	{
@@ -77,8 +121,18 @@ void RenderCube::Render()
 		m_deviceContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
 
 		// OM
+		//  Update Sun, Earth, Moon
+		m_deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_transformData1, 0, 0);
+		m_deviceContext->DrawIndexed(m_indices.size(), 0, 0);
+
+		m_deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_transformData2, 0, 0);
+		m_deviceContext->DrawIndexed(m_indices.size(), 0, 0);
+
+		m_deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_transformData3, 0, 0);
 		m_deviceContext->DrawIndexed(m_indices.size(), 0, 0);
 	}
+
+	RenderImGUI();
 
 	RenderEnd();
 }
@@ -113,9 +167,6 @@ void RenderCube::CreateGeometry()
 		6,4,5, 7,4,6,
 	};
 
-	// 인덱스 개수 저장.
-	m_indicesNum = m_indices.size();	// 만들고 안쓰고 있는 애. 지우자.
-
 	// Vertex Buffer, Index Buffer 정보 준비.
 	GameProcessor::CreateGeometry();
 }
@@ -134,4 +185,68 @@ void RenderCube::SetTransformMatrix()
 
 	// Initialize the projection matrix
 	m_projection = XMMatrixPerspectiveFovLH(XM_PIDIV2, g_winSizeX / static_cast<FLOAT>(g_winSizeY), 0.01f, 100.0f);
+}
+
+void RenderCube::InitImGUI()
+{
+	/*
+		ImGUI 초기화.
+	*/
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+
+	// Setup Dear ImGui style
+	//ImGui::StyleColorsLight();
+	ImGui::StyleColorsDark();
+
+	// Setup Platform/Renderer backends
+	ImGui_ImplWin32_Init(WinApp::GetHandleWnd());
+	ImGui_ImplDX11_Init(this->m_device.Get(), this->m_deviceContext.Get());
+}
+
+void RenderCube::UnInitImGUI()
+{
+	// Cleanup
+	ImGui_ImplDX11_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
+}
+
+void RenderCube::RenderImGUI()
+{
+	ImGui_ImplDX11_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
+	// camera control window
+	{
+		ImGui::SetNextWindowPos(ImVec2(525, 10));
+		ImGui::SetNextWindowSize(ImVec2(500, 200));		// 메뉴 창 크기 설정
+		ImGui::Begin("Camera Control Panel");
+
+		ImGui::Text("Adjust camera position");
+		ImGui::SliderFloat3("Camera (x, y, z)", m_cameraPos, -10.0f, 10.0f);
+		ImGui::SliderFloat("FOV", &m_cameraFOV, 0.01f, 180.0f);
+		ImGui::SliderFloat("Near", &m_cameraNear, 0.01f, 10.0f);
+		ImGui::SliderFloat("Far", &m_cameraFar, 1.f, 100.0f);
+
+		ImGui::End();
+	}
+
+	// cube control window
+	{
+		ImGui::SetNextWindowPos(ImVec2(10, 10));
+		ImGui::SetNextWindowSize(ImVec2(500, 120));		// 메뉴 창 크기 설정
+		ImGui::Begin("Cube Control Panel");
+
+		ImGui::Text("Adjust the planets positions");
+		ImGui::SliderFloat3("Sun (x, y, z)", m_sunPos, -5.0f, 5.0f);
+		ImGui::SliderFloat3("Earth (x, y, z)", m_earthPos, -5.0f, 5.0f);
+		ImGui::SliderFloat3("Moon (x, y, z)", m_moonPos, -5.0f, 5.0f);
+
+		ImGui::End();
+	}
+
+	ImGui::Render();
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }

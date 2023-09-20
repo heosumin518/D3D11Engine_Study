@@ -88,8 +88,8 @@ void RenderTriangle::CreateGeometry()
 
 	// Index
 	{
-		//m_indices = { 0, 1, 2 };	// 삼각형
-		m_indices = { 0, 1, 2, 2, 1, 3 };	// 사각형
+		m_indices = { 0, 1, 3 };	// 삼각형
+		//m_indices = { 0, 1, 2, 2, 1, 3 };	// 사각형
 	}
 
 

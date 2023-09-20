@@ -14,9 +14,10 @@ struct Vertex
 		: position(position), color(color) { }
 };
 
-struct ConstantBuffer
+
+struct TransformData
 {
-	Matrix world;
-	Matrix view;
-	Matrix projection;
+	Matrix world = Matrix::Identity;
+	Matrix view = Matrix::Identity;
+	Matrix projection = Matrix::Identity;
 };

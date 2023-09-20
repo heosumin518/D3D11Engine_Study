@@ -25,8 +25,10 @@ void GameProcessor::Update()
 
 void GameProcessor::RenderBegin()
 {
-	m_deviceContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), nullptr);
+	//m_deviceContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), nullptr);
 	m_deviceContext->ClearRenderTargetView(m_renderTargetView.Get(), m_clearColor);
+	m_deviceContext->ClearDepthStencilView(m_depthStancilView.Get(), D3D11_CLEAR_DEPTH, 1.f, 0);	// 뎁스버퍼 1.0f로 초기화
+	m_deviceContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStancilView.Get());
 	m_deviceContext->RSSetViewports(1, &m_viewport);
 }
 
@@ -52,6 +54,7 @@ void GameProcessor::CreateDeviceAndSwapChain()
 
 		swapDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		swapDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+		swapDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 
 		// 샘플링 관련 설정
 		swapDesc.SampleDesc.Count = 1;
@@ -104,6 +107,34 @@ void GameProcessor::SetViewport()
 	m_viewport.MaxDepth = 1.f;
 }
 
+void GameProcessor::CreateDepthStencilView()
+{
+	D3D11_TEXTURE2D_DESC desc;
+	ZeroMemory(&desc, sizeof(D3D11_TEXTURE2D_DESC));
+	desc.Width = m_width;
+	desc.Height = m_height;
+	desc.MipLevels = 1;
+	desc.ArraySize = 1;
+	desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	desc.SampleDesc.Count = 1;
+	desc.SampleDesc.Quality = 0;
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	desc.CPUAccessFlags = 0;
+	desc.MiscFlags = 0;
+
+	ComPtr<ID3D11Texture2D> textureDepthStencil = nullptr;
+	HR_T(m_device->CreateTexture2D(&desc, nullptr, textureDepthStencil.GetAddressOf()));
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+	ZeroMemory(&dsvDesc, sizeof(D3D11_DEPTH_STENCIL_VIEW_DESC));
+	dsvDesc.Format = desc.Format;
+	dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	dsvDesc.Texture2D.MipSlice = 0;
+
+	HR_T(m_device->CreateDepthStencilView(textureDepthStencil.Get(), &dsvDesc, m_depthStancilView.GetAddressOf()));
+}
+
 // Render() 에서 파이프라인에 바인딩할 버퍼 정보 준비
 void GameProcessor::CreateGeometry()
 {
@@ -114,7 +145,7 @@ void GameProcessor::CreateGeometry()
 		// 정점 버퍼 정보 설정
 		D3D11_BUFFER_DESC vbDesc;
 		ZeroMemory(&vbDesc, sizeof(vbDesc));
-		vbDesc.Usage = D3D11_USAGE_IMMUTABLE;		// GPU에서 read 만 가능한 데이터로 설정한다.
+		vbDesc.Usage = D3D11_USAGE_DEFAULT;
 		vbDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;		// vertex buffer를 사용하는데 쓸 것이라는 걸 알려주기.
 		vbDesc.ByteWidth = static_cast<uint32>(sizeof(Vertex) * m_vertices.size());
 		vbDesc.CPUAccessFlags = 0;
@@ -131,7 +162,7 @@ void GameProcessor::CreateGeometry()
 		// 인덱스 버퍼 정보 설정
 		D3D11_BUFFER_DESC ibDesc;
 		ZeroMemory(&ibDesc, sizeof(ibDesc));
-		ibDesc.Usage = D3D11_USAGE_IMMUTABLE;
+		ibDesc.Usage = D3D11_USAGE_DEFAULT;
 		ibDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 		ibDesc.ByteWidth = static_cast<uint32>(sizeof(WORD) * m_indices.size());
 		ibDesc.CPUAccessFlags = 0;
@@ -181,10 +212,10 @@ void GameProcessor::CreateConstantBuffer()
 	// 상수 버퍼 정보 생성
 	D3D11_BUFFER_DESC cbDesc;
 	ZeroMemory(&cbDesc, sizeof(cbDesc));
-	cbDesc.Usage = D3D11_USAGE_DEFAULT;
+	cbDesc.Usage = D3D11_USAGE_DEFAULT; // D3D11_USAGE_DYNAMIC;	// CPU_Write + GPU_Read 둘 다 가능하게 만들었다. 이걸로 바꾸기 .오류 안나면.
 	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;	// 상수 버퍼 용도로 활용
-	cbDesc.ByteWidth = sizeof(ConstantBuffer);
-	cbDesc.CPUAccessFlags = 0;
+	cbDesc.ByteWidth = sizeof(TransformData);
+	cbDesc.CPUAccessFlags = 0;		// cpu 도 접근가능하게.
 
 	// 상수 버퍼 생성
 	HR_T(m_device->CreateBuffer(&cbDesc, nullptr, m_constantBuffer.GetAddressOf()));

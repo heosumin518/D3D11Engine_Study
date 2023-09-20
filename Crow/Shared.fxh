@@ -1,11 +1,11 @@
 //--------------------------------------------------------------------------------------
 // Constant Buffer Variables
 //--------------------------------------------------------------------------------------
-cbuffer ConstantBuffer : register(b0)
+cbuffer TransformData : register(b0)
 {
-    matrix World;
-    matrix View;
-    matrix Projection;
+    matrix world;
+    matrix view;
+    matrix projection;
 }
 
 struct VS_INPUT

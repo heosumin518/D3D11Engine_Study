@@ -3,10 +3,9 @@
 VS_OUTPUT VS(VS_INPUT input)
 {
 	VS_OUTPUT output;
-	output.position = input.position;
-    output.position = mul(input.position, World);
-    output.position = mul(output.position, View);
-    output.position = mul(output.position, Projection);
+    output.position = mul(input.position, world);
+    output.position = mul(output.position, view);
+    output.position = mul(output.position, projection);
 	output.color = input.color;
 
 	return output;
