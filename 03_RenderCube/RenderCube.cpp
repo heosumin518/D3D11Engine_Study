@@ -11,24 +11,24 @@ RenderCube::RenderCube(const int32& width, const int32& height, const std::wstri
 
 RenderCube::~RenderCube()
 {
-	UnInitImGUI();
+	GameProcessor::UnInitImGUI();
 }
 
 void RenderCube::Initialize()
 {
-	CreateDeviceAndSwapChain();
-	CreateRenderTargetView();
-	SetViewport();
-	CreateDepthStencilView();
+	GameProcessor::CreateDeviceAndSwapChain();
+	GameProcessor::CreateRenderTargetView();
+	GameProcessor::SetViewport();
+	GameProcessor::CreateDepthStencilView();
 
 	CreateGeometry();
-	CreateVertexShader();
-	CreateInputLayout();
-	CreatePixelShader();
+	GameProcessor::CreateVertexShader();
+	GameProcessor::CreateInputLayout();
+	GameProcessor::CreatePixelShader();
 
-	CreateConstantBuffer();
+	GameProcessor::CreateConstantBuffer();
 
-	InitImGUI();
+	GameProcessor::InitImGUI();
 }
 
 void RenderCube::Update()
@@ -187,31 +187,6 @@ void RenderCube::SetTransformMatrix()
 	m_projection = XMMatrixPerspectiveFovLH(XM_PIDIV2, g_winSizeX / static_cast<FLOAT>(g_winSizeY), 0.01f, 100.0f);
 }
 
-void RenderCube::InitImGUI()
-{
-	/*
-		ImGUI ÃÊ±âÈ­.
-	*/
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-
-	// Setup Dear ImGui style
-	//ImGui::StyleColorsLight();
-	ImGui::StyleColorsDark();
-
-	// Setup Platform/Renderer backends
-	ImGui_ImplWin32_Init(WinApp::GetHandleWnd());
-	ImGui_ImplDX11_Init(this->m_device.Get(), this->m_deviceContext.Get());
-}
-
-void RenderCube::UnInitImGUI()
-{
-	// Cleanup
-	ImGui_ImplDX11_Shutdown();
-	ImGui_ImplWin32_Shutdown();
-	ImGui::DestroyContext();
-}
-
 void RenderCube::RenderImGUI()
 {
 	ImGui_ImplDX11_NewFrame();
@@ -250,3 +225,4 @@ void RenderCube::RenderImGUI()
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
+

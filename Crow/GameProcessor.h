@@ -32,6 +32,10 @@ protected:
 
 	void CreateConstantBuffer();
 
+	// ImGUI
+	void InitImGUI();
+	void UnInitImGUI();
+
 protected:
 	UINT m_width;
 	UINT m_height;
@@ -48,7 +52,8 @@ protected:
 
 	// Misc
 	D3D11_VIEWPORT m_viewport = { 0 };
-	float m_clearColor[4] = { 0.f, 0.f, 0.f, 1.0f };
+	//float m_clearColor[4] = { 0.7f, 0.8f, 0.9f, 1.0f };
+	float m_clearColor[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
 
 	// Geometry
 	vector<Vertex> m_vertices;
