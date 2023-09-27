@@ -30,6 +30,10 @@ protected:
 	virtual void CreateVertexShader();
 	virtual void CreatePixelShader();
 
+	void CreateSamplerState();
+
+	void CreateShaderResourceView();
+
 	void CreateConstantBuffer();
 
 	// ImGUI
@@ -85,12 +89,15 @@ protected:
 	Vector3 m_localPosition = { 0.f, 0.f, 0.f };
 	Vector3 m_localRotation = { 0.f, 0.f, 0.f };
 	Vector3 m_localScale = { 1.f, 1.f, 1.f };
-	
 
 	// camera
 	XMVECTOR m_eye;		// 월드 공간에서의 카메라 좌표(정점)
 	XMVECTOR m_at;		// 카메라의 시점에서 바라보는 지점의 좌표(정점)
 	XMVECTOR m_up;		// 카메라 상단의 방향을 나타내는 벡터
+
+	// Texture
+	ComPtr<ID3D11ShaderResourceView> m_shaderReasourceView = nullptr;		// 텍스처 리소스 뷰
+	ComPtr<ID3D11SamplerState> m_samplerState = nullptr;		// 샘플러 상태
 };
 
 inline UINT GameProcessor::GetWidth() const

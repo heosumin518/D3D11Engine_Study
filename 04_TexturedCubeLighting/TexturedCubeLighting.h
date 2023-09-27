@@ -41,7 +41,7 @@ private:
 	TransformData m_lightTransformData;
 
 	// ImGUI 로 조절할 변수 목록
-	float m_cameraPos[3] = { 0.f, 3.0, -8.f };
+	float m_cameraPos[3] = { 0.f, 4.0, -12.f };
 	float m_cameraFOV = 90.f;
 	float m_cameraNear = 0.01f;
 	float m_cameraFar = 100.0f;

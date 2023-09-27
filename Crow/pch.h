@@ -25,8 +25,10 @@ using namespace std;
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <wrl.h>
-
 #include <directxtk/SimpleMath.h>
+#include <DirectXTex.h>
+#include <DirectXTex.inl>
+
 //#include <DirectXMath.h>
 using namespace DirectX;
 using namespace DirectX::SimpleMath;

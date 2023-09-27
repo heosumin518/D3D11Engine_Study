@@ -4,8 +4,8 @@ struct Vertex
 {
 	Vector3 position;		// 정점 위치 정보
 	Vector3 normal;
+	Vector2 Tex;			// 라이팅 다 하면 이거 쓰기
 	//Color color;			// 정점 색상 정보 라이팅 하면 이거 대신 텍스처 사용할것.
-	// Vector2 Tex;			// 라이팅 다 하면 이거 쓰기
 
 	Vertex() = default;		// 기본생성자.  없애야할수도..?
 

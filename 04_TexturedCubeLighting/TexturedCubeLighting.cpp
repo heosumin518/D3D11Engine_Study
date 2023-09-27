@@ -24,17 +24,12 @@ void TexturedCubeLighting::Initialize()
 	GameProcessor::CreateInputLayout();
 	CreatePixelShader();
 
+	GameProcessor::CreateSamplerState();
+	GameProcessor::CreateShaderResourceView();
+
 	GameProcessor::CreateConstantBuffer();
 
 	GameProcessor::InitImGUI();
-
-	// 초기값설정
-	m_world = XMMatrixIdentity();
-	XMVECTOR Eye = XMVectorSet(0.0f, 4.0f, -12.0f, 0.0f);
-	XMVECTOR At = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	m_view = XMMatrixLookAtLH(Eye, At, Up);
-	m_projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, g_winSizeX / (FLOAT)g_winSizeY, 0.01f, 100.0f);
 }
 
 void TexturedCubeLighting::Update()
@@ -43,15 +38,15 @@ void TexturedCubeLighting::Update()
 
 	auto t = m_timer.TotalTime();
 
-	//// update camera
-	//{
-	//	m_eye = XMVectorSet(m_cameraPos[0], m_cameraPos[1], m_cameraPos[2], 0.0f);
-	//	m_at = XMVectorSet(m_cameraPos[0], m_cameraPos[1] + 1.0f, 100.0f, 0.0f);
-	//	m_up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	// update camera
+	{
+		m_eye = XMVectorSet(m_cameraPos[0], m_cameraPos[1], m_cameraPos[2], 0.0f);
+		m_at = XMVectorSet(m_cameraPos[0], m_cameraPos[1] + 1.0f, 100.0f, 0.0f);
+		m_up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
-	//	m_view = XMMatrixLookAtLH(m_eye, m_at, m_up);		// ViewTransform 행렬 구하기. XMMatrixLookToLH() 함수로도 구할 수 있음
-	//	m_projection = XMMatrixPerspectiveFovLH(m_cameraFOV / 180.0f * 3.14f, g_winSizeX / static_cast<FLOAT>(g_winSizeY), m_cameraNear, m_cameraFar);		// 0.01f, 100.0f 각각 near 와 far
-	//}
+		m_view = XMMatrixLookAtLH(m_eye, m_at, m_up);		// ViewTransform 행렬 구하기. XMMatrixLookToLH() 함수로도 구할 수 있음
+		m_projection = XMMatrixPerspectiveFovLH(m_cameraFOV / 180.0f * 3.14f, g_winSizeX / static_cast<FLOAT>(g_winSizeY), m_cameraNear, m_cameraFar);		// 0.01f, 100.0f 각각 near 와 far
+	}
 
 	m_world = Matrix::Identity;
 	//m_world = Matrix::CreateRotationY(t);
