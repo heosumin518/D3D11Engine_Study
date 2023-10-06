@@ -28,6 +28,7 @@ using namespace std;
 #include <directxtk/SimpleMath.h>
 #include <DirectXTex.h>
 #include <DirectXTex.inl>
+#include <Directxtk/DDSTextureLoader.h>
 
 //#include <DirectXMath.h>
 using namespace DirectX;

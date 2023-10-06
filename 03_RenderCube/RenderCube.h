@@ -15,7 +15,7 @@ public:
 	virtual void CreateGeometry() override;
 	virtual void SetTransformMatrix() override;
 
-	void RenderImGUI();
+	void RenderImGUI() override;
 
 private:
 	// Transform

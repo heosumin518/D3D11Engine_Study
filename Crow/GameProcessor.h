@@ -38,6 +38,7 @@ protected:
 
 	// ImGUI
 	void InitImGUI();
+	virtual void RenderImGUI() {};
 	void UnInitImGUI();
 
 protected:

@@ -12,6 +12,7 @@ VS_OUTPUT main(VS_INPUT input)
     output.position = mul(output.position, view);
     output.position = mul(output.position, projection);
     output.normal = mul(float4(input.normal, 1), world).xyz;
+    output.uv = input.uv;
 
     return output;
 }

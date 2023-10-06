@@ -39,9 +39,6 @@
     <FxCompile Include="Fourth_BasicPixelShader.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Fourth_SolidPixelShader.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="Fourth_BasicVertexShader.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>

@@ -6,15 +6,16 @@
  * \return 
  */
 
+Texture2D texture0 : register(t0);
+SamplerState sampler0 : register(s0);
+
 float4 main(VS_OUTPUT input) : SV_Target
 {
-    float4 finalColor = 0;
+    float4 textureColor = texture0.Sample(sampler0, input.uv);
+    float4 finalColor = saturate(dot(input.normal, (float3) -lightDir) * lightColor);
+    finalColor.a = 1.f;
 
-    //do NdotL lighting for 2 lights
-    for (int i = 0; i < 2; i++)
-    {
-        finalColor += saturate(dot((float3) lightDir[i], input.normal) * lightColor[i]);
-    }
-    finalColor.a = 1;
+    finalColor *= textureColor;
+
     return finalColor;
 }

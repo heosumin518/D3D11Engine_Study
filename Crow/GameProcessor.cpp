@@ -147,7 +147,7 @@ void GameProcessor::CreateGeometry()
 		ZeroMemory(&vbDesc, sizeof(vbDesc));
 		vbDesc.Usage = D3D11_USAGE_DEFAULT;
 		vbDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;		// vertex buffer를 사용하는데 쓸 것이라는 걸 알려주기.
-		vbDesc.ByteWidth = static_cast<uint32>(sizeof(Vertex) * m_vertices.size());
+		vbDesc.ByteWidth = static_cast<UINT>(sizeof(Vertex) * m_vertices.size());
 		vbDesc.CPUAccessFlags = 0;
 
 		// 정점 버퍼 생성
@@ -164,7 +164,7 @@ void GameProcessor::CreateGeometry()
 		ZeroMemory(&ibDesc, sizeof(ibDesc));
 		ibDesc.Usage = D3D11_USAGE_DEFAULT;
 		ibDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-		ibDesc.ByteWidth = static_cast<uint32>(sizeof(WORD) * m_indices.size());
+		ibDesc.ByteWidth = static_cast<UINT>(sizeof(WORD) * m_indices.size());
 		ibDesc.CPUAccessFlags = 0;
 
 		// 인덱스 버퍼 생성
@@ -177,7 +177,7 @@ void GameProcessor::CreateGeometry()
 
 void GameProcessor::SetTransformMatrix()
 {
-	// TODO : 이걸 부모에다 해놓을까 아님 자식에다 해놓을까
+	// TODO
 }
 
 // Render() 에서 파이프라인에 바인딩할 InputLayout 생성 	
@@ -185,9 +185,9 @@ void GameProcessor::CreateInputLayout()
 {
 	D3D11_INPUT_ELEMENT_DESC layout[] =  // 인풋 레이아웃은 버텍스 쉐이더가 입력받을 데이터의 형식을 지정한다.
 	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0}
 	};
 	// AlignedByteOffset 값을 D3D11_APPEND_ALIGNED_ELEMENT 로 지정하면 버퍼에 데이터가 어떻게 배열되는지를 자동으로 알아내도록 할 수 있다.
 
@@ -226,10 +226,12 @@ void GameProcessor::CreateSamplerState()
 
 void GameProcessor::CreateShaderResourceView()
 {
-	DirectX::TexMetadata md;
-	DirectX::ScratchImage img;
-	HR_T(::LoadFromWICFile(L"steveHead.png", WIC_FLAGS_NONE, &md, img));	// 이미지 로드	// MS에서 권장하는 함수..?
-	HR_T(::CreateShaderResourceView(m_device.Get(), img.GetImages(), img.GetImageCount(), md, m_shaderReasourceView.GetAddressOf()));
+	//DirectX::TexMetadata md;
+	//DirectX::ScratchImage img;
+	//HR_T(::LoadFromWICFile(L"steveHead.png", WIC_FLAGS_NONE, &md, img));	// 이미지 로드	// MS에서 권장하는 함수..?
+	//HR_T(::CreateShaderResourceView(m_device.Get(), img.GetImages(), img.GetImageCount(), md, m_shaderReasourceView.GetAddressOf()));
+
+	HR_T(CreateDDSTextureFromFile(m_device.Get(), L"seafloor.dds", nullptr, m_shaderReasourceView.GetAddressOf()));
 }
 
 void GameProcessor::CreateConstantBuffer()
