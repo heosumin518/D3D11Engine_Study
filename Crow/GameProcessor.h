@@ -1,5 +1,6 @@
 #pragma once
 
+
 class GameProcessor
 {
 public:
@@ -23,18 +24,16 @@ protected:
 	void SetViewport();
 	void CreateDepthStencilView();
 
-	virtual void SetTransformMatrix();
-
-	virtual void CreateGeometry();
-	void CreateInputLayout();
+	virtual void CreateGeometry() {};
+	virtual void CreateInputLayout() {};
 	virtual void CreateVertexShader();
 	virtual void CreatePixelShader();
 
 	void CreateSamplerState();
 
-	void CreateShaderResourceView();
+	virtual void CreateShaderResourceView() {};
 
-	void CreateConstantBuffer();
+	virtual void CreateConstantBuffer() {};
 
 	// ImGUI
 	void InitImGUI();
@@ -61,11 +60,9 @@ protected:
 	float m_clearColor[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
 
 	// Geometry
-	vector<Vertex> m_vertices;
 	ComPtr<ID3D11Buffer> m_vertexBuffer = nullptr;
 	ComPtr<ID3D11InputLayout> m_inputLayout = nullptr;
 	ComPtr<ID3D11Buffer> m_indexBuffer = nullptr;
-	vector<WORD> m_indices;
 	int m_indicesNum = 0;	// 인덱스 개수
 	// VS
 	ComPtr<ID3D11VertexShader> m_vertexShader = nullptr;
@@ -82,14 +79,6 @@ protected:
 	Matrix m_world;			// 월드 좌표계 공간으로 변환을 위한 행렬
 	Matrix m_view;			// 카메라 좌표계 공간으로 변환을 위한 행렬
 	Matrix m_projection;	// 단위장치좌표계(Normalized Device Coordinate) 공간으로 변환을 위한 행렬.
-
-	// Scale Rotation Translate
-	TransformData m_transformData;
-	ComPtr<ID3D11Buffer> m_constantBuffer = nullptr;
-
-	Vector3 m_localPosition = { 0.f, 0.f, 0.f };
-	Vector3 m_localRotation = { 0.f, 0.f, 0.f };
-	Vector3 m_localScale = { 1.f, 1.f, 1.f };
 
 	// camera
 	XMVECTOR m_eye;		// 월드 공간에서의 카메라 좌표(정점)

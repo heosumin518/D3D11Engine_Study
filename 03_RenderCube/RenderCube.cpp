@@ -6,7 +6,6 @@
 RenderCube::RenderCube(const int32& width, const int32& height, const std::wstring& name)
 	: GameProcessor(width, height, name)
 {
-
 }
 
 RenderCube::~RenderCube()
@@ -23,10 +22,10 @@ void RenderCube::Initialize()
 
 	CreateGeometry();
 	GameProcessor::CreateVertexShader();
-	GameProcessor::CreateInputLayout();
+	CreateInputLayout();
 	GameProcessor::CreatePixelShader();
 
-	GameProcessor::CreateConstantBuffer();
+	CreateConstantBuffer();
 
 	GameProcessor::InitImGUI();
 }
@@ -44,7 +43,7 @@ void RenderCube::Update()
 		m_up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
 		m_view = XMMatrixLookAtLH(m_eye, m_at, m_up);		// ViewTransform 행렬 구하기. XMMatrixLookToLH() 함수로도 구할 수 있음
-		m_projection = XMMatrixPerspectiveFovLH(m_cameraFOV / 180.0f * 3.14f , g_winSizeX / static_cast<FLOAT>(g_winSizeY), m_cameraNear, m_cameraFar);		// 0.01f, 100.0f 각각 near 와 far
+		m_projection = XMMatrixPerspectiveFovLH(m_cameraFOV / 180.0f * 3.14f , g_winSizeX / static_cast<FLOAT>(g_winSizeY), m_cameraNear, m_cameraFar);
 	}
 
 	// set Sun, Earth, Moon
@@ -83,22 +82,11 @@ void RenderCube::Update()
 		m_transformData3.view = XMMatrixTranspose(m_view);
 		m_transformData3.projection = XMMatrixTranspose(m_projection);
 	}
-
 }
 
 void RenderCube::Render()
 {
 	RenderBegin();
-
-	// TO DO
-
-
-	// Update variables
-	//ConstantBuffer constantBuffer;
-	//constantBuffer.world = XMMatrixTranspose(m_world);
-	//constantBuffer.view = XMMatrixTranspose(m_view);
-	//constantBuffer.projection = XMMatrixTranspose(m_projection);
-	//m_deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &constantBuffer, 0, 0);
 
 	// IA - VS - RS - PS - OM
 	{
@@ -113,7 +101,7 @@ void RenderCube::Render()
 
 		// VS
 		m_deviceContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
-		m_deviceContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
+		m_deviceContext->VSSetConstantBuffers(0, 1, m_transformBuffer.GetAddressOf());
 
 		// RS
 
@@ -121,14 +109,14 @@ void RenderCube::Render()
 		m_deviceContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
 
 		// OM
-		//  Update Sun, Earth, Moon
-		m_deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_transformData1, 0, 0);
+		// Render Sun, Earth, Moon
+		m_deviceContext->UpdateSubresource(m_transformBuffer.Get(), 0, nullptr, &m_transformData1, 0, 0);
 		m_deviceContext->DrawIndexed(m_indices.size(), 0, 0);
 
-		m_deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_transformData2, 0, 0);
+		m_deviceContext->UpdateSubresource(m_transformBuffer.Get(), 0, nullptr, &m_transformData2, 0, 0);
 		m_deviceContext->DrawIndexed(m_indices.size(), 0, 0);
 
-		m_deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_transformData3, 0, 0);
+		m_deviceContext->UpdateSubresource(m_transformBuffer.Get(), 0, nullptr, &m_transformData3, 0, 0);
 		m_deviceContext->DrawIndexed(m_indices.size(), 0, 0);
 	}
 
@@ -168,23 +156,66 @@ void RenderCube::CreateGeometry()
 	};
 
 	// Vertex Buffer, Index Buffer 정보 준비.
-	GameProcessor::CreateGeometry();
+	// VertexBuffer
+	{
+		// 정점 버퍼 정보 설정
+		D3D11_BUFFER_DESC vbDesc;
+		ZeroMemory(&vbDesc, sizeof(vbDesc));
+		vbDesc.Usage = D3D11_USAGE_DEFAULT;
+		vbDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;		// vertex buffer를 사용하는데 쓸 것이라는 걸 알려주기.
+		vbDesc.ByteWidth = static_cast<uint32>(sizeof(Vertex) * m_vertices.size());
+		vbDesc.CPUAccessFlags = 0;
+
+		// 정점 버퍼 생성
+		D3D11_SUBRESOURCE_DATA vbData;
+		ZeroMemory(&vbData, sizeof(vbData));
+		vbData.pSysMem = m_vertices.data();		// 배열 데이터 할당.
+		HR_T(m_device->CreateBuffer(&vbDesc, &vbData, m_vertexBuffer.GetAddressOf()));
+	}
+
+	// IndexBuffer
+	{
+		// 인덱스 버퍼 정보 설정
+		D3D11_BUFFER_DESC ibDesc;
+		ZeroMemory(&ibDesc, sizeof(ibDesc));
+		ibDesc.Usage = D3D11_USAGE_DEFAULT;
+		ibDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		ibDesc.ByteWidth = static_cast<uint32>(sizeof(WORD) * m_indices.size());
+		ibDesc.CPUAccessFlags = 0;
+
+		// 인덱스 버퍼 생성
+		D3D11_SUBRESOURCE_DATA ibData;
+		ZeroMemory(&ibData, sizeof(ibData));
+		ibData.pSysMem = m_indices.data();		// 배열 데이터 할당.
+		HR_T(m_device->CreateBuffer(&ibDesc, &ibData, m_indexBuffer.GetAddressOf()));
+	}
 }
 
-void RenderCube::SetTransformMatrix()
+// Render() 에서 파이프라인에 바인딩할 InputLayout 생성 	
+void RenderCube::CreateInputLayout()
 {
-	// 쉐이더에 전달할 데이터 설정
-	// Initialize the world matrix
-	m_world = ::XMMatrixIdentity();
+	D3D11_INPUT_ELEMENT_DESC layout[] =  // 인풋 레이아웃은 버텍스 쉐이더가 입력받을 데이터의 형식을 지정한다.
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
+	};
 
-	// Initialize the view matrix
-	m_eye = XMVectorSet(0.0f, 1.0f, -5.0f, 0.0f);
-	m_at = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	m_up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	m_view = XMMatrixLookAtLH(m_eye, m_at, m_up);		// ViewTransform 행렬 구하기. XMMatrixLookToLH() 함수로도 구할 수 있음
+	const int32 count = sizeof(layout) / sizeof(D3D11_INPUT_ELEMENT_DESC);
+	HR_T(m_device->CreateInputLayout(layout, count, m_vsBlob->GetBufferPointer(), m_vsBlob->GetBufferSize(), m_inputLayout.GetAddressOf()));
+}
 
-	// Initialize the projection matrix
-	m_projection = XMMatrixPerspectiveFovLH(XM_PIDIV2, g_winSizeX / static_cast<FLOAT>(g_winSizeY), 0.01f, 100.0f);
+void RenderCube::CreateConstantBuffer()
+{
+	// 상수 버퍼 정보 생성
+	D3D11_BUFFER_DESC cbDesc;
+	ZeroMemory(&cbDesc, sizeof(cbDesc));
+	cbDesc.Usage = D3D11_USAGE_DEFAULT; // D3D11_USAGE_DYNAMIC;	// CPU_Write + GPU_Read 둘 다 가능하게 만들었다. 이걸로 바꾸기 .오류 안나면.
+	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;	// 상수 버퍼 용도로 활용
+	cbDesc.ByteWidth = sizeof(TransformData);
+	cbDesc.CPUAccessFlags = 0;		// cpu 도 접근가능하게.
+
+	// 상수 버퍼 생성
+	HR_T(m_device->CreateBuffer(&cbDesc, nullptr, m_transformBuffer.GetAddressOf()));
 }
 
 void RenderCube::RenderImGUI()

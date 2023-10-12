@@ -41,7 +41,7 @@ using namespace Microsoft::WRL;
 
 #include "Types.h"
 #include "Values.h"
-#include "Structs.h"
+//#include "Structs.h"
 #include "Helper.h"
 
 #include "TimeSystem.h"

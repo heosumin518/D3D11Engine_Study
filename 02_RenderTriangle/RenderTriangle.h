@@ -1,6 +1,12 @@
 #pragma once
 #include "GameProcessor.h"
 
+struct Vertex
+{
+	Vector3 position;
+	Color color;
+};
+
 class RenderTriangle :
 	public GameProcessor
 {
@@ -8,12 +14,15 @@ public:
 	RenderTriangle(const int32& width, const int32& height, const std::wstring& name);
 	virtual ~RenderTriangle() = default;
 
-	virtual void Initialize() override;
-	virtual void Update() override;
-	virtual void Render() override;
+	void Initialize() override;
+	void Update() override;
+	void Render() override;
 
-	virtual void CreateGeometry() override;
-	virtual void CreateVertexShader();
-	virtual void CreatePixelShader();
+	void CreateGeometry() override;
+	void CreateInputLayout() override;
+
+private:
+	vector<Vertex> m_vertices;
+	vector<WORD> m_indices;
 };
 

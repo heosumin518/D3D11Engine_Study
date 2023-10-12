@@ -14,9 +14,9 @@ void RenderTriangle::Initialize()
 	GameProcessor::SetViewport();
 
 	CreateGeometry();
-	CreateVertexShader();
-	GameProcessor::CreateInputLayout();
-	CreatePixelShader();
+	GameProcessor::CreateVertexShader();
+	CreateInputLayout();
+	GameProcessor::CreatePixelShader();
 }
 
 void RenderTriangle::Update()
@@ -48,7 +48,6 @@ void RenderTriangle::Render()
 		m_deviceContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
 
 		// OM
-		//m_deviceContext->Draw(m_vertices.size(), 0);
 		m_deviceContext->DrawIndexed(m_indices.size(), 0, 0);
 	}
 
@@ -69,9 +68,11 @@ void RenderTriangle::CreateGeometry()
 	//	 |   v0-----------v2    |  /
 	// (-1,-1,0)-------------(1,-1,0)
 
+
 	// VertexData
 	{
-		m_vertices.resize(4);
+		// m_vertices.resize(3);
+		m_vertices.resize(4);		// 사각형
 
 		m_vertices[0].position = Vector3(-0.5f, -0.5f, 0.f);
 		m_vertices[0].color = Color(1.0f, 0.f, 0.f, 1.f);
@@ -86,25 +87,55 @@ void RenderTriangle::CreateGeometry()
 		m_vertices[3].color = Color(0.f, 0.f, 1.0f, 1.f);
 	}
 
-	// Index
+	// IndexData
 	{
-		m_indices = { 0, 1, 3 };	// 삼각형
-		//m_indices = { 0, 1, 2, 2, 1, 3 };	// 사각형
+		//m_indices = { 0, 1, 3 };	// 삼각형
+		m_indices = { 0, 1, 2, 2, 1, 3 };	// 사각형
 	}
 
 
 	// VertexBuffer
-	GameProcessor::CreateGeometry();
+	{
+		// 정점 버퍼 정보 설정
+		D3D11_BUFFER_DESC vbDesc;
+		ZeroMemory(&vbDesc, sizeof(vbDesc));
+		vbDesc.Usage = D3D11_USAGE_IMMUTABLE;		// GPU에서 read 만 가능한 데이터로 설정
+		vbDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;		// vertex buffer를 사용하는데 쓸 것이라는 걸 알려주기.
+		vbDesc.ByteWidth = static_cast<uint32>(sizeof(Vertex) * m_vertices.size());
+
+		// 정점 버퍼 생성
+		D3D11_SUBRESOURCE_DATA vbData;
+		ZeroMemory(&vbData, sizeof(vbData));
+		vbData.pSysMem = m_vertices.data();
+		HR_T(m_device->CreateBuffer(&vbDesc, &vbData, m_vertexBuffer.GetAddressOf()));
+	}
+
+	// IndexBuffer
+	{
+		// 인덱스 버퍼 정보 설정
+		D3D11_BUFFER_DESC ibDesc;
+		ZeroMemory(&ibDesc, sizeof(ibDesc));
+		ibDesc.Usage = D3D11_USAGE_IMMUTABLE;
+		ibDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		ibDesc.ByteWidth = static_cast<uint32>(sizeof(WORD) * m_indices.size());
+		ibDesc.CPUAccessFlags = 0;
+
+		// 인덱스 버퍼 생성
+		D3D11_SUBRESOURCE_DATA ibData;
+		ZeroMemory(&ibData, sizeof(ibData));
+		ibData.pSysMem = m_indices.data();		// 배열 데이터 할당.
+		HR_T(m_device->CreateBuffer(&ibDesc, &ibData, m_indexBuffer.GetAddressOf()));
+	}
 }
 
-void RenderTriangle::CreateVertexShader()
+void RenderTriangle::CreateInputLayout()
 {
-	HR_T(CompileShaderFromFile(L"BasicVertexShader.hlsl", "VS", "vs_5_0", m_vsBlob));
-	HR_T(m_device->CreateVertexShader(m_vsBlob->GetBufferPointer(), m_vsBlob->GetBufferSize(), nullptr, m_vertexShader.GetAddressOf()));
-}
+	D3D11_INPUT_ELEMENT_DESC layout[] =  // 인풋 레이아웃은 버텍스 쉐이더가 입력받을 데이터의 형식을 지정한다.
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
+	};
 
-void RenderTriangle::CreatePixelShader()
-{
-	HR_T(CompileShaderFromFile(L"BasicPixelShader.hlsl", "PS", "ps_5_0", m_psBlob));
-	HR_T(m_device->CreatePixelShader(m_psBlob->GetBufferPointer(), m_psBlob->GetBufferSize(), nullptr, m_pixelShader.GetAddressOf()));
+	const int32 count = sizeof(layout) / sizeof(D3D11_INPUT_ELEMENT_DESC);
+	HR_T(m_device->CreateInputLayout(layout, count, m_vsBlob->GetBufferPointer(), m_vsBlob->GetBufferSize(), m_inputLayout.GetAddressOf()));
 }

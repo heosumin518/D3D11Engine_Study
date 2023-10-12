@@ -9,9 +9,9 @@ ScreenClear::ScreenClear(const int32& width, const int32& height, const std::wst
 
 void ScreenClear::Initialize()
 {
-	CreateDeviceAndSwapChain();
-	CreateRenderTargetView();
-	SetViewport();
+	GameProcessor::CreateDeviceAndSwapChain();
+	GameProcessor::CreateRenderTargetView();
+	GameProcessor::SetViewport();
 }
 
 void ScreenClear::Update()
@@ -21,9 +21,9 @@ void ScreenClear::Update()
 
 void ScreenClear::Render()
 {
-	RenderBegin();
+	GameProcessor::RenderBegin();
 
 	// TO DO
 
-	RenderEnd();
+	GameProcessor::RenderEnd();
 }

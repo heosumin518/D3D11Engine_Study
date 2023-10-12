@@ -1,23 +1,42 @@
 #pragma once
 #include "GameProcessor.h"
 
-class RenderCube :
+struct Vertex
+{
+	Vector3 position;	// 정점 위치 정보
+	Color color;		// 정점 색상 정보
+};
+
+struct TransformData
+{
+	Matrix world = Matrix::Identity;
+	Matrix view = Matrix::Identity;
+	Matrix projection = Matrix::Identity;
+};
+
+class RenderCube:
 	public GameProcessor
 {
 public:
 	RenderCube(const int32& width, const int32& height, const std::wstring& name);
-	virtual ~RenderCube();
+	~RenderCube() override;
 
-	virtual void Initialize() override;
-	virtual void Update() override;
-	virtual void Render() override;
+	void Initialize() override;
+	void Update() override;
+	void Render() override;
 
-	virtual void CreateGeometry() override;
-	virtual void SetTransformMatrix() override;
+	void CreateGeometry() override;
+	void CreateInputLayout() override;
+	void CreateConstantBuffer() override;
 
 	void RenderImGUI() override;
 
 private:
+	vector<Vertex> m_vertices;
+	vector<WORD> m_indices;
+
+	ComPtr<ID3D11Buffer> m_transformBuffer = nullptr;
+
 	// Transform
 	TransformData m_transformData1;
 	TransformData m_transformData2;

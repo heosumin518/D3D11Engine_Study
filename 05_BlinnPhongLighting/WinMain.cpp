@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "TexturedCubeLighting.h"
+#include "BlinnPhongLighting.h"
 #include "WinApp.h"
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
@@ -7,6 +7,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_ LPWSTR    lpCmdLine,
 	_In_ int       nCmdShow)
 {
-	TexturedCubeLighting texturedCubeLighting(900, 650, g_gameName);
-	return WinApp::Run(&texturedCubeLighting, hInstance, nCmdShow);
+	BlinnPhongLighting blinnPhongLighting(1280, 1000, g_gameName);
+	return WinApp::Run(&blinnPhongLighting, hInstance, nCmdShow);
 }

@@ -1,18 +1,18 @@
 #include "pch.h"
-#include "TexturedCubeLighting.h"
+#include "BlinnPhongLighting.h"
 
-TexturedCubeLighting::TexturedCubeLighting(const int32& width, const int32& height, const std::wstring& name)
+BlinnPhongLighting::BlinnPhongLighting(const int32& width, const int32& height, const std::wstring& name)
 	: GameProcessor(width, height, name)
 {
 
 }
 
-TexturedCubeLighting::~TexturedCubeLighting()
+BlinnPhongLighting::~BlinnPhongLighting()
 {
 	GameProcessor::UnInitImGUI();
 }
 
-void TexturedCubeLighting::Initialize()
+void BlinnPhongLighting::Initialize()
 {
 	GameProcessor::CreateDeviceAndSwapChain();
 	GameProcessor::CreateRenderTargetView();
@@ -32,7 +32,7 @@ void TexturedCubeLighting::Initialize()
 	GameProcessor::InitImGUI();
 }
 
-void TexturedCubeLighting::Update()
+void BlinnPhongLighting::Update()
 {
 	GameProcessor::Update();
 
@@ -40,9 +40,9 @@ void TexturedCubeLighting::Update()
 
 	// update camera
 	{
-		m_eye = XMVectorSet(m_cameraPos[0], m_cameraPos[1], m_cameraPos[2], 0.0f);
-		m_at = XMVectorSet(m_cameraPos[0], m_cameraPos[1] + 1.0f, 100.0f, 0.0f);
-		m_up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+		m_eye = XMVectorSet(m_cameraPos.x, m_cameraPos.y, m_cameraPos.z, 0.f);
+		m_at = XMVectorSet(m_cameraPos.x, m_cameraPos.y + 1.f, 100.f, 0.f);
+		m_up = XMVectorSet(0.f, 1.f, 0.f, 0.f);
 
 		m_view = XMMatrixLookAtLH(m_eye, m_at, m_up);		// ViewTransform 행렬 구하기. XMMatrixLookToLH() 함수로도 구할 수 있음
 		m_projection = XMMatrixPerspectiveFovLH(m_cameraFOV / 180.0f * 3.14f, g_winSizeX / static_cast<FLOAT>(g_winSizeY), m_cameraNear, m_cameraFar);		// 0.01f, 100.0f 각각 near 와 far
@@ -55,19 +55,18 @@ void TexturedCubeLighting::Update()
 		Matrix spinZ = Matrix::CreateRotationZ(m_cubeRotateInfo.z);
 		m_world = spinY * spinX * spinZ;
 
-		m_CBCubeData.world = XMMatrixTranspose(m_world);
-		m_CBCubeData.view = XMMatrixTranspose(m_view);
-		m_CBCubeData.projection = XMMatrixTranspose(m_projection);
+		m_CBCube.world = XMMatrixTranspose(m_world);
+		m_CBCube.view = XMMatrixTranspose(m_view);
+		m_CBCube.projection = XMMatrixTranspose(m_projection);
 	}
 
 	// update light
 	{
-		m_CBLight.lightDir = m_lightDir;
-		m_CBLight.lightColor = m_lightColor;
+		m_CBLight.eyePos = m_cameraPos;
 	}
 }
 
-void TexturedCubeLighting::Render()
+void BlinnPhongLighting::Render()
 {
 	RenderBegin();
 
@@ -98,7 +97,7 @@ void TexturedCubeLighting::Render()
 
 		// OM
 		// Render cube and Light
-		m_deviceContext->UpdateSubresource(m_CBTransformBuffer.Get(), 0, nullptr, &m_CBCubeData, 0, 0);
+		m_deviceContext->UpdateSubresource(m_CBTransformBuffer.Get(), 0, nullptr, &m_CBCube, 0, 0);
 		m_deviceContext->UpdateSubresource(m_CBLightBuffer.Get(), 0, nullptr, &m_CBLight, 0, 0);
 		m_deviceContext->DrawIndexed(m_indices.size(), 0, 0);
 	}
@@ -108,7 +107,7 @@ void TexturedCubeLighting::Render()
 	RenderEnd();
 }
 
-void TexturedCubeLighting::RenderImGUI()
+void BlinnPhongLighting::RenderImGUI()
 {
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -121,7 +120,7 @@ void TexturedCubeLighting::RenderImGUI()
 		ImGui::Begin("Camera Control Panel");
 
 		ImGui::Text("Adjust camera position");
-		ImGui::SliderFloat3("Camera (x, y, z)", m_cameraPos, -10.0f, 10.0f);
+		ImGui::SliderFloat3("Camera (x, y, z)", reinterpret_cast<float*>(&m_cameraPos), -10.0f, 10.0f);
 		ImGui::SliderFloat("FOV", &m_cameraFOV, 0.01f, 180.0f);
 		ImGui::SliderFloat("Near", &m_cameraNear, 0.01f, 10.0f);
 		ImGui::SliderFloat("Far", &m_cameraFar, 1.f, 100.0f);
@@ -138,9 +137,9 @@ void TexturedCubeLighting::RenderImGUI()
 		ImGui::Begin("Cube Control Panel");
 
 		ImGui::Text("Rotate Cube");
-		ImGui::SliderFloat("X", &m_cubeRotateInfo.x, 0.f, 5.0f);
-		ImGui::SliderFloat("Y", &m_cubeRotateInfo.y, 0.f, 5.0f);
-		ImGui::SliderFloat("Z", &m_cubeRotateInfo.z, 0.f, 5.0f);
+		ImGui::SliderFloat("X", &m_cubeRotateInfo.x, -5.f, 5.0f);
+		ImGui::SliderFloat("Y", &m_cubeRotateInfo.y, -5.f, 5.0f);
+		ImGui::SliderFloat("Z", &m_cubeRotateInfo.z, -5.f, 5.0f);
 
 		ImGui::End();
 	}
@@ -148,12 +147,15 @@ void TexturedCubeLighting::RenderImGUI()
 	// light control window
 	{
 		ImGui::SetNextWindowPos(ImVec2(10, 140));
-		ImGui::SetNextWindowSize(ImVec2(400, 120));		// 메뉴 창 크기 설정
+		ImGui::SetNextWindowSize(ImVec2(400, 170));		// 메뉴 창 크기 설정
 		ImGui::Begin("Light Control Panel");
 
-		ImGui::Text("Adjust the planets positions");
-		ImGui::SliderFloat3("Direction", reinterpret_cast<float*>(&m_lightDir), -1.f, 1.f);
-		ImGui::SliderFloat3("Color", reinterpret_cast<float*>(&m_lightColor), 0.f, 1.f);
+		ImGui::Checkbox("UseBlinnPhong", &m_CBLight.useBlinnPhong);
+		ImGui::SliderFloat3("Direction", reinterpret_cast<float*>(&m_CBLight.direction), -1.f, 1.f);
+		ImGui::ColorEdit4("Ambient", reinterpret_cast<float*>(&m_CBLight.ambient));
+		ImGui::ColorEdit4("Diffuse", reinterpret_cast<float*>(&m_CBLight.diffuse));
+		ImGui::ColorEdit4("Specular", reinterpret_cast<float*>(&m_CBLight.specular));
+		ImGui::SliderFloat("SpecularPower", &m_CBLight.specularPower, 0.f, 2000.f);
 		ImGui::End();
 	}
 
@@ -161,7 +163,7 @@ void TexturedCubeLighting::RenderImGUI()
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
 
-void TexturedCubeLighting::CreateGeometry()
+void BlinnPhongLighting::CreateGeometry()
 {
 	// Vertex Data 준비
 	// Render()에서 파이프라인에 바인딩할 버텍스 정보 준비
@@ -247,7 +249,7 @@ void TexturedCubeLighting::CreateGeometry()
 }
 
 // Render() 에서 파이프라인에 바인딩할 InputLayout 생성 
-void TexturedCubeLighting::CreateInputLayout()
+void BlinnPhongLighting::CreateInputLayout()
 {
 	D3D11_INPUT_ELEMENT_DESC layout[] =  // 인풋 레이아웃은 버텍스 쉐이더가 입력받을 데이터의 형식을 지정한다.
 	{
@@ -261,14 +263,14 @@ void TexturedCubeLighting::CreateInputLayout()
 	HR_T(m_device->CreateInputLayout(layout, count, m_vsBlob->GetBufferPointer(), m_vsBlob->GetBufferSize(), m_inputLayout.GetAddressOf()));
 }
 
-void TexturedCubeLighting::CreateConstantBuffer()
+void BlinnPhongLighting::CreateConstantBuffer()
 {
 	// Transform 상수 버퍼 정보 생성
 	D3D11_BUFFER_DESC CBTransformDesc;
 	ZeroMemory(&CBTransformDesc, sizeof(CBTransformDesc));
 	CBTransformDesc.Usage = D3D11_USAGE_DEFAULT;
 	CBTransformDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;	// 상수 버퍼 용도로 활용
-	CBTransformDesc.ByteWidth = sizeof(CBTransformData);
+	CBTransformDesc.ByteWidth = sizeof(CB_Transform);
 	CBTransformDesc.CPUAccessFlags = 0;		// cpu 도 접근가능하게.
 	// Transform 상수 버퍼 생성
 	HR_T(m_device->CreateBuffer(&CBTransformDesc, nullptr, m_CBTransformBuffer.GetAddressOf()));
@@ -278,13 +280,13 @@ void TexturedCubeLighting::CreateConstantBuffer()
 	ZeroMemory(&CBLightDesc, sizeof(CBLightDesc));
 	CBLightDesc.Usage = D3D11_USAGE_DEFAULT;
 	CBLightDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;	// 상수 버퍼 용도로 활용
-	CBLightDesc.ByteWidth = sizeof(CBLightData);
+	CBLightDesc.ByteWidth = sizeof(CB_DirectionLight);
 	CBLightDesc.CPUAccessFlags = 0;		// cpu 도 접근가능하게.
 	// Light 상수 버퍼 생성
 	HR_T(m_device->CreateBuffer(&CBLightDesc, nullptr, m_CBLightBuffer.GetAddressOf()));
 }
 
-void TexturedCubeLighting::CreateShaderResourceView()
+void BlinnPhongLighting::CreateShaderResourceView()
 {
 	//DirectX::TexMetadata md;
 	//DirectX::ScratchImage img;

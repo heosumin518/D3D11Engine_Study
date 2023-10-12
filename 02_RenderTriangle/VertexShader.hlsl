@@ -1,6 +1,6 @@
-#include "BasicShared.fxh"
+#include "Shared.fxh"
 
-VS_OUTPUT VS(VS_INPUT input)
+VS_OUTPUT vs_main(VS_INPUT input)
 {
     VS_OUTPUT output;
     output.position = input.position;
