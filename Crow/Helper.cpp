@@ -1,6 +1,13 @@
 #include "pch.h"
 #include "Helper.h"
 
+LPCWSTR GetComErrorString(HRESULT hr)
+{
+	_com_error err(hr);
+	LPCWSTR errMsg = err.ErrorMessage();
+	return errMsg;
+}
+
 HRESULT CompileShaderFromFile(const wstring& szFileName, const string& szEntryPoint, const string& szShaderModel, ComPtr<ID3DBlob>& BlobOut)
 {
 	HRESULT hr = S_OK;
@@ -38,5 +45,23 @@ HRESULT CompileShaderFromFile(const wstring& szFileName, const string& szEntryPo
 		return hr;
 	}
 
+	return S_OK;
+}
+
+HRESULT CreateTextureFromFile(ID3D11Device* d3dDevice, const wchar_t* szFileName, ID3D11ShaderResourceView** textureView)
+{
+	HRESULT hr = S_OK;
+
+	// Load the Texture
+	hr = DirectX::CreateDDSTextureFromFile(d3dDevice, szFileName, nullptr, textureView);
+	if (FAILED(hr))
+	{
+		hr = DirectX::CreateWICTextureFromFile(d3dDevice, szFileName, nullptr, textureView);
+		if (FAILED(hr))
+		{
+			MessageBoxW(NULL, GetComErrorString(hr), szFileName, MB_OK);
+			return hr;
+		}
+	}
 	return S_OK;
 }

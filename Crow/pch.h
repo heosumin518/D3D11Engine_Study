@@ -7,6 +7,8 @@
 #ifndef PCH_H
 #define PCH_H
 
+#include <comdef.h>
+
 // STL
 #include <vector>
 #include <string>
@@ -26,9 +28,13 @@ using namespace std;
 #include <d3dcompiler.h>
 #include <wrl.h>
 #include <directxtk/SimpleMath.h>
-#include <DirectXTex.h>
-#include <DirectXTex.inl>
+//#include <DirectXTex.h>
+//#include <DirectXTex.inl>
+#include <DirectXTex/DirectXTex.h>
+#include <DirectXTex/DirectXTex.inl>
+
 #include <Directxtk/DDSTextureLoader.h>
+#include <Directxtk/WICTextureLoader.h>
 
 //#include <DirectXMath.h>
 using namespace DirectX;
