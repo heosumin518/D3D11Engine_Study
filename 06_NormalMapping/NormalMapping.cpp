@@ -167,6 +167,8 @@ void NormalMapping::RenderImGUI()
 
 	// material control window
 	{
+		ImGui::SetNextWindowPos(ImVec2(1150, 10));
+		ImGui::SetNextWindowSize(ImVec2(400, 180));		// 메뉴 창 크기 설정
 		ImGui::Begin("Metarial Control Panel");
 
 		ImGui::Checkbox("UseNormalMap", &m_CBMaterial.useNormalMap);
@@ -189,65 +191,54 @@ void NormalMapping::CreateGeometry()
 	// Render()에서 파이프라인에 바인딩할 버텍스 정보 준비
 	m_vertices.resize(24);
 
+	// Vertex Data 준비
+	// Render()에서 파이프라인에 바인딩할 버텍스 정보 준비
+	m_vertices.resize(24);
+
 	m_vertices[0].position = Vector3(-1.0f, 1.0f, -1.0f);	m_vertices[0].normal = Vector3(0.0f, 1.0f, 0.0f); m_vertices[0].uv = Vector2(1.0f, 0.0f);
 	m_vertices[1].position = Vector3(1.0f, 1.0f, -1.0f);	m_vertices[1].normal = Vector3(0.0f, 1.0f, 0.0f); m_vertices[1].uv = Vector2(0.0f, 0.0f);
 	m_vertices[2].position = Vector3(1.0f, 1.0f, 1.0f);		m_vertices[2].normal = Vector3(0.0f, 1.0f, 0.0f); m_vertices[2].uv = Vector2(0.0f, 1.0f);
 	m_vertices[3].position = Vector3(-1.0f, 1.0f, 1.0f);	m_vertices[3].normal = Vector3(0.0f, 1.0f, 0.0f); m_vertices[3].uv = Vector2(1.0f, 1.0f);
-
-	m_vertices[0].tangent = Vector3(1.f, 0.f, 0.f);
-	m_vertices[1].tangent = Vector3(1.f, 0.f, 0.f);
-	m_vertices[2].tangent = Vector3(1.f, 0.f, 0.f);
-	m_vertices[3].tangent = Vector3(1.f, 0.f, 0.f);
 
 	m_vertices[4].position = Vector3(-1.0f, -1.0f, -1.0f);	m_vertices[4].normal = Vector3(0.0f, -1.0f, 0.0f); m_vertices[4].uv = Vector2(0.0f, 0.0f);
 	m_vertices[5].position = Vector3(1.0f, -1.0f, -1.0f); 	m_vertices[5].normal = Vector3(0.0f, -1.0f, 0.0f); m_vertices[5].uv = Vector2(1.0f, 0.0f);
 	m_vertices[6].position = Vector3(1.0f, -1.0f, 1.0f);  	m_vertices[6].normal = Vector3(0.0f, -1.0f, 0.0f); m_vertices[6].uv = Vector2(1.0f, 1.0f);
 	m_vertices[7].position = Vector3(-1.0f, -1.0f, 1.0f); 	m_vertices[7].normal = Vector3(0.0f, -1.0f, 0.0f); m_vertices[7].uv = Vector2(0.0f, 1.0f);
 
-	m_vertices[4].tangent = Vector3(0.f, -1.f, 0.f);
-	m_vertices[5].tangent = Vector3(0.f, -1.f, 0.f);
-	m_vertices[6].tangent = Vector3(0.f, -1.f, 0.f);
-	m_vertices[7].tangent = Vector3(0.f, -1.f, 0.f);
-
-	m_vertices[8].position = Vector3( -1.0f, -1.0f, 1.0f); 	m_vertices[8].normal = Vector3(-1.0f, 0.0f, 0.0f); m_vertices[8].uv = Vector2(0.0f, 1.0f);
-	m_vertices[9].position = Vector3( -1.0f, -1.0f, -1.0f);	m_vertices[9].normal = Vector3(-1.0f, 0.0f, 0.0f); m_vertices[9].uv = Vector2(1.0f, 1.0f);
+	m_vertices[8].position = Vector3(-1.0f, -1.0f, 1.0f); 	m_vertices[8].normal = Vector3(-1.0f, 0.0f, 0.0f); m_vertices[8].uv = Vector2(0.0f, 1.0f);
+	m_vertices[9].position = Vector3(-1.0f, -1.0f, -1.0f);	m_vertices[9].normal = Vector3(-1.0f, 0.0f, 0.0f); m_vertices[9].uv = Vector2(1.0f, 1.0f);
 	m_vertices[10].position = Vector3(-1.0f, 1.0f, -1.0f); 	m_vertices[10].normal = Vector3(-1.0f, 0.0f, 0.0f); m_vertices[10].uv = Vector2(1.0f, 0.0f);
 	m_vertices[11].position = Vector3(-1.0f, 1.0f, 1.0f);  	m_vertices[11].normal = Vector3(-1.0f, 0.0f, 0.0f); m_vertices[11].uv = Vector2(0.0f, 0.0f);
 
-	m_vertices[8].tangent =  Vector3(1.f, 0.f, 0.f);
-	m_vertices[9].tangent =  Vector3(1.f, 0.f, 0.f);
-	m_vertices[10].tangent = Vector3(1.f, 0.f, 0.f);
-	m_vertices[11].tangent = Vector3(1.f, 0.f, 0.f);
+	m_vertices[8].tangent = Vector3(0.f, 0.f, -1.0f);
+	m_vertices[9].tangent = Vector3(0.f, 0.f, -1.0f);
+	m_vertices[10].tangent = Vector3(0.f, 0.f, -1.0f);
+	m_vertices[11].tangent = Vector3(0.f, 0.f, -1.0f);
 
 	m_vertices[12].position = Vector3(1.0f, -1.0f, 1.0f); 	m_vertices[12].normal = Vector3(1.0f, 0.0f, 0.0f); m_vertices[12].uv = Vector2(1.0f, 1.0f);
 	m_vertices[13].position = Vector3(1.0f, -1.0f, -1.0f);	m_vertices[13].normal = Vector3(1.0f, 0.0f, 0.0f);  m_vertices[13].uv = Vector2(0.0f, 1.0f);
 	m_vertices[14].position = Vector3(1.0f, 1.0f, -1.0f); 	m_vertices[14].normal = Vector3(1.0f, 0.0f, 0.0f);  m_vertices[14].uv = Vector2(0.0f, 0.0f);
 	m_vertices[15].position = Vector3(1.0f, 1.0f, 1.0f);  	m_vertices[15].normal = Vector3(1.0f, 0.0f, 0.0f);  m_vertices[15].uv = Vector2(1.0f, 0.0f);
 
-	m_vertices[12].tangent = Vector3(1.f, 0.f, 0.f);
-	m_vertices[13].tangent = Vector3(1.f, 0.f, 0.f);
-	m_vertices[14].tangent = Vector3(1.f, 0.f, 0.f);
-	m_vertices[15].tangent = Vector3(1.f, 0.f, 0.f);
+	m_vertices[12].tangent = Vector3(0.f, 0.f, 1.0f);
+	m_vertices[13].tangent = Vector3(0.f, 0.f, 1.0f);
+	m_vertices[14].tangent = Vector3(0.f, 0.f, 1.0f);
+	m_vertices[15].tangent = Vector3(0.f, 0.f, 1.0f);
 
 	m_vertices[16].position = Vector3(-1.0f, -1.0f, -1.0f);	m_vertices[16].normal = Vector3(0.0f, 0.0f, -1.0f); m_vertices[16].uv = Vector2(0.0f, 1.0f);
 	m_vertices[17].position = Vector3(1.0f, -1.0f, -1.0f); 	m_vertices[17].normal = Vector3(0.0f, 0.0f, -1.0f); m_vertices[17].uv = Vector2(1.0f, 1.0f);
 	m_vertices[18].position = Vector3(1.0f, 1.0f, -1.0f);  	m_vertices[18].normal = Vector3(0.0f, 0.0f, -1.0f); m_vertices[18].uv = Vector2(1.0f, 0.0f);
 	m_vertices[19].position = Vector3(-1.0f, 1.0f, -1.0f); 	m_vertices[19].normal = Vector3(0.0f, 0.0f, -1.0f); m_vertices[19].uv = Vector2(0.0f, 0.0f);
 
-	m_vertices[16].tangent = Vector3(0.f, 0.f, -1.0f);
-	m_vertices[17].tangent = Vector3(0.f, 0.f, -1.0f);
-	m_vertices[18].tangent = Vector3(0.f, 0.f, -1.0f);
-	m_vertices[19].tangent = Vector3(0.f, 0.f, -1.0f);
+	m_vertices[16].tangent = Vector3(1.f, 0.f, 0.f);
+	m_vertices[17].tangent = Vector3(1.f, 0.f, 0.f);
+	m_vertices[18].tangent = Vector3(1.f, 0.f, 0.f);
+	m_vertices[19].tangent = Vector3(1.f, 0.f, 0.f);
 
 	m_vertices[20].position = Vector3(-1.0f, -1.0f, 1.0f);	m_vertices[20].normal = Vector3(0.0f, 0.0f, 1.0f); m_vertices[20].uv = Vector2(1.0f, 1.0f);
 	m_vertices[21].position = Vector3(1.0f, -1.0f, 1.0f); 	m_vertices[21].normal = Vector3(0.0f, 0.0f, 1.0f); m_vertices[21].uv = Vector2(0.0f, 1.0f);
 	m_vertices[22].position = Vector3(1.0f, 1.0f, 1.0f);  	m_vertices[22].normal = Vector3(0.0f, 0.0f, 1.0f); m_vertices[22].uv = Vector2(0.0f, 0.0f);
 	m_vertices[23].position = Vector3(-1.0f, 1.0f, 1.0f); 	m_vertices[23].normal = Vector3(0.0f, 0.0f, 1.0f); m_vertices[23].uv = Vector2(1.0f, 0.0f);
-
-	m_vertices[20].tangent = Vector3(0.f, 0.f, 1.0f);
-	m_vertices[21].tangent = Vector3(0.f, 0.f, 1.0f);
-	m_vertices[22].tangent = Vector3(0.f, 0.f, 1.0f);
-	m_vertices[23].tangent = Vector3(0.f, 0.f, 1.0f);
 
 	// Index Data
 	// Render() 에서 파이프라인에 바인딩할 인덱스 버퍼 생성

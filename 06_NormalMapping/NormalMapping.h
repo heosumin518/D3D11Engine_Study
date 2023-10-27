@@ -30,7 +30,7 @@ struct CB_Material
 {
 	Vector4 ambient = { 1.0f, 1.0f, 1.0f, 1.0f };
 	Vector4 diffuse = { 1.0f, 1.0f, 1.0f, 1.0f };
-	Vector4 specular = { 0.6f, 0.6f, 0.6f, 0.6f };
+	Vector4 specular = { 1.f, 1.f, 1.f, 1.f };
 	float specularPower = 80.f;
 	bool useNormalMap = true;
 	bool pad2[3];
@@ -83,7 +83,7 @@ private:
 	ComPtr<ID3D11ShaderResourceView> m_specularRV = nullptr;		// specular 리소스 뷰
 
 	// ImGUI 로 조절할 camera 변수 목록
-	Vector3 m_cameraPos = Vector3(0.0f, 0.0f, -5.0f);
+	Vector3 m_cameraPos = Vector3(0.0f, 0.0f, -6.5f);
 	float m_cameraFOV = 30.f;
 	float m_cameraNear = 0.01f;
 	float m_cameraFar = 500.0f;
