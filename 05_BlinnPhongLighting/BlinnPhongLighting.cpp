@@ -293,5 +293,5 @@ void BlinnPhongLighting::CreateShaderResourceView()
 	//HR_T(::LoadFromWICFile(L"steveHead.png", WIC_FLAGS_NONE, &md, img));	// 이미지 로드	// MS에서 권장하는 함수..?
 	//HR_T(::CreateShaderResourceView(m_device.Get(), img.GetImages(), img.GetImageCount(), md, m_shaderReasourceView.GetAddressOf()));
 
-	HR_T(CreateDDSTextureFromFile(m_device.Get(), L"seafloor.dds", nullptr, m_shaderReasourceView.GetAddressOf()));
+	HR_T(CreateDDSTextureFromFile(m_device.Get(), L"../Resources/seafloor.dds", nullptr, m_shaderReasourceView.GetAddressOf()));
 }

@@ -23,15 +23,20 @@ using namespace std;
 #include <windows.h>
 #include <assert.h>
 
+//Assimp
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 // DirectX
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <wrl.h>
 #include <directxtk/SimpleMath.h>
-//#include <DirectXTex.h>
-//#include <DirectXTex.inl>
-#include <DirectXTex/DirectXTex.h>
-#include <DirectXTex/DirectXTex.inl>
+#include <DirectXTex.h>
+#include <DirectXTex.inl>
+//#include <DirectXTex/DirectXTex.h>
+//#include <DirectXTex/DirectXTex.inl>
 
 #include <Directxtk/DDSTextureLoader.h>
 #include <Directxtk/WICTextureLoader.h>

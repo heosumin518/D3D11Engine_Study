@@ -361,13 +361,13 @@ void NormalMapping::CreateShaderResourceView()
 
 	DirectX::TexMetadata md;
 	DirectX::ScratchImage img;
-	HR_T(::LoadFromWICFile(L"Bricks059_1K-JPG_Color.jpg", static_cast<WIC_FLAGS>(NULL), &md, img));	// 이미지 로드	// MS에서 권장하는 함수..?
+	HR_T(::LoadFromWICFile(L"../Resources/Bricks059_1K-JPG_Color.jpg", static_cast<WIC_FLAGS>(NULL), &md, img));	// 이미지 로드	// MS에서 권장하는 함수..?
 	HR_T(::CreateShaderResourceView(m_device.Get(), img.GetImages(), img.GetImageCount(), md, m_diffuseRV.GetAddressOf()));
 	
-	HR_T(::LoadFromWICFile(L"Bricks059_1K-JPG_NormalDX.jpg", static_cast<WIC_FLAGS>(NULL), &md, img));	// 이미지 로드	// MS에서 권장하는 함수..?
+	HR_T(::LoadFromWICFile(L"../Resources/Bricks059_1K-JPG_NormalDX.jpg", static_cast<WIC_FLAGS>(NULL), &md, img));	// 이미지 로드	// MS에서 권장하는 함수..?
 	HR_T(::CreateShaderResourceView(m_device.Get(), img.GetImages(), img.GetImageCount(), md, m_normalRV.GetAddressOf()));
 	
-	HR_T(::LoadFromWICFile(L"Bricks059_Specular.png", static_cast<WIC_FLAGS>(NULL), &md, img));	// 이미지 로드	// MS에서 권장하는 함수..?
+	HR_T(::LoadFromWICFile(L"../Resources/Bricks059_Specular.png", static_cast<WIC_FLAGS>(NULL), &md, img));	// 이미지 로드	// MS에서 권장하는 함수..?
 	HR_T(::CreateShaderResourceView(m_device.Get(), img.GetImages(), img.GetImageCount(), md, m_specularRV.GetAddressOf()));
 
 }
