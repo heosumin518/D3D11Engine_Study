@@ -26,6 +26,7 @@
     <ClInclude Include="06. SamplerDemo.h" />
     <ClInclude Include="07. HeightMapDemo.h" />
     <ClInclude Include="08. NormalDemo.h" />
+    <ClInclude Include="09. MeshDemo.h" />
     <ClInclude Include="CameraScript.h" />
     <ClInclude Include="Main.h" />
     <ClInclude Include="pch.h" />
@@ -39,6 +40,7 @@
     <ClCompile Include="06. SamplerDemo.cpp" />
     <ClCompile Include="07. HeightMapDemo.cpp" />
     <ClCompile Include="08. NormalDemo.cpp" />
+    <ClCompile Include="09. MeshDemo.cpp" />
     <ClCompile Include="CameraScript.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="pch.cpp">

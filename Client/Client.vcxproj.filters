@@ -48,6 +48,9 @@
     <ClCompile Include="08. NormalDemo.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="09. MeshDemo.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -81,6 +84,9 @@
       <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="08. NormalDemo.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="09. MeshDemo.h">
       <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>
