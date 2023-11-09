@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Game">
+      <UniqueIdentifier>{089c2981-c81f-4c18-b0d9-43d405cde3b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Main">
+      <UniqueIdentifier>{ea571d4c-0fe3-48d3-ad33-84f54d27b31e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{03af279d-e194-4be8-b5d5-5d6a4496a2fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Main\Camera">
+      <UniqueIdentifier>{0f9e2d6d-73ed-40ff-bc7c-744cf2d2321b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
+    <ClCompile Include="01. TriangleDemo.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="02. QuadDemo.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="03. ConstBufferDemo.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="04. CameraDemo.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraScript.cpp">
+      <Filter>Main\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="05. TextureDemo.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="06. SamplerDemo.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="07. HeightMapDemo.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="08. NormalDemo.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h">
+      <Filter>Main</Filter>
+    </ClInclude>
+    <ClInclude Include="Main.h">
+      <Filter>Main</Filter>
+    </ClInclude>
+    <ClInclude Include="01. TriangleDemo.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="02. QuadDemo.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="03. ConstBufferDemo.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="04. CameraDemo.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraScript.h">
+      <Filter>Main\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="05. TextureDemo.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="06. SamplerDemo.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="07. HeightMapDemo.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="08. NormalDemo.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\Shaders\01. Triangle.fx">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shaders\02. Quad.fx">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shaders\03. ConstBuffer.fx">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shaders\04. Texture.fx">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shaders\05. Sampler.fx">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shaders\06. Terrain.fx">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shaders\07. Normal.fx">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>
