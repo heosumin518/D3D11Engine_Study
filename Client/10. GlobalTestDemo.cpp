@@ -7,6 +7,8 @@
 
 void GlobalTestDemo::Init()
 {
+	_shader = make_shared<Shader>(L"08. GlobalTest.fx");
+
 	// Camera
 	_camera = make_shared<GameObject>();
 	_camera->GetOrAddTransform();
@@ -19,8 +21,7 @@ void GlobalTestDemo::Init()
 	_obj->GetOrAddTransform();
 	_obj->AddComponent(make_shared<MeshRenderer>());
 	{
-		auto shader = make_shared<Shader>(L"07. Normal.fx");
-		_obj->GetMeshRenderer()->SetShader(shader);
+		_obj->GetMeshRenderer()->SetShader(_shader);
 	}
 	{
 		RESOURCES->Init();
@@ -31,11 +32,15 @@ void GlobalTestDemo::Init()
 		auto texture = RESOURCES->Load<Texture>(L"Veigar", L"..\\Resources\\Textures\\veigar.jpg");
 		_obj->GetMeshRenderer()->SetTexture(texture);
 	}
+
+	RENDER->Init(_shader);
 }
 
 void GlobalTestDemo::Update()
 {
 	_camera->Update();		// 원래는 씬에 있어야 하는 것.
+	RENDER->Update();
+
 	_obj->Update();
 }
 
