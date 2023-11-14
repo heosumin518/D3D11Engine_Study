@@ -17,6 +17,7 @@
 #include "14. SpecularDemo.h"
 #include "15. EmissiveDemo.h"
 #include "16. LightingDemo.h"
+#include "17. MaterialDemo.h"
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
@@ -28,7 +29,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	desc.width = 800;
 	desc.height = 600;
 	desc.clearColor = Color(0.f, 0.f, 0.f, 0.f);
-	desc.app = make_shared<LightingDemo>();		// 여기가 바로 실행단위. 어떤 앱을 실행시킬 것인지 결정할 수 있다.
+	desc.app = make_shared<MaterialDemo>();		// 여기가 바로 실행단위. 어떤 앱을 실행시킬 것인지 결정할 수 있다.
 
 	GAME->Run(desc);
 
