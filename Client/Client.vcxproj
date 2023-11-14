@@ -28,6 +28,7 @@
     <ClInclude Include="08. NormalDemo.h" />
     <ClInclude Include="09. MeshDemo.h" />
     <ClInclude Include="10. GlobalTestDemo.h" />
+    <ClInclude Include="11. DepthStencilDemo.h" />
     <ClInclude Include="CameraScript.h" />
     <ClInclude Include="Main.h" />
     <ClInclude Include="pch.h" />
@@ -43,6 +44,7 @@
     <ClCompile Include="08. NormalDemo.cpp" />
     <ClCompile Include="09. MeshDemo.cpp" />
     <ClCompile Include="10. GlobalTestDemo.cpp" />
+    <ClCompile Include="11. DepthStencilDemo.cpp" />
     <ClCompile Include="CameraScript.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="pch.cpp">

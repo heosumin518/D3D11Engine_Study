@@ -69,6 +69,9 @@
     <ClCompile Include="10. GlobalTestDemo.cpp">
       <Filter>Game\Week2</Filter>
     </ClCompile>
+    <ClCompile Include="11. DepthStencilDemo.cpp">
+      <Filter>Game\Week2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -108,6 +111,9 @@
       <Filter>Game\Week1</Filter>
     </ClInclude>
     <ClInclude Include="10. GlobalTestDemo.h">
+      <Filter>Game\Week2</Filter>
+    </ClInclude>
+    <ClInclude Include="11. DepthStencilDemo.h">
       <Filter>Game\Week2</Filter>
     </ClInclude>
   </ItemGroup>
