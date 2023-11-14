@@ -33,6 +33,7 @@ void RenderManager::PushGlobalData(const Matrix& view, const Matrix& projection)
 	_globalDesc.V = view;
 	_globalDesc.P = projection;
 	_globalDesc.VP = view * projection;		// CPU 에서 연산한 뒤 GPU로 한번에 넘겨준다.
+	_globalDesc.VInv = view.Invert();
 	_globalBuffer->CopyData(_globalDesc);
 	_globalEffectBuffer->SetConstantBuffer(_globalBuffer->GetComPtr().Get());
 }
