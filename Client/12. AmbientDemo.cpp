@@ -1,14 +1,14 @@
 #include "pch.h"
-#include "11. DepthStencilDemo.h"
+#include "12. AmbientDemo.h"
 #include "GeometryHelper.h"
 #include "Camera.h"
 #include "CameraScript.h"
 #include "MeshRenderer.h"
 
-void DepthStencilDemo::Init()
+void AmbientDemo::Init()
 {
 	RESOURCES->Init();
-	_shader = make_shared<Shader>(L"08. GlobalTest.fx");
+	_shader = make_shared<Shader>(L"09. Lighting_Ambient.fx");
 
 	// Camera
 	_camera = make_shared<GameObject>();
@@ -51,16 +51,29 @@ void DepthStencilDemo::Init()
 	RENDER->Init(_shader);
 }
 
-void DepthStencilDemo::Update()
+void AmbientDemo::Update()
 {
 	_camera->Update();		// 원래는 씬에 있어야 하는 것.
 	RENDER->Update();
 
-	_obj->Update();
-	_obj2->Update();
+	//
+	Vec4 lightAmbient{ 0.2f };
+	_shader->GetVector("LightAmbient")->SetFloatVector((float*)&lightAmbient);
+
+	{
+		Vec4 materialAmbient(1.f);
+		_shader->GetVector("MaterialAmbient")->SetFloatVector((float*)&materialAmbient);
+		_obj->Update();
+	}
+
+	{
+		Vec4 materialAmbient(1.f);
+		_shader->GetVector("MaterialAmbient")->SetFloatVector((float*)&materialAmbient);
+		_obj2->Update();
+	}
 }
 
-void DepthStencilDemo::Render()
+void AmbientDemo::Render()
 {
 
 }

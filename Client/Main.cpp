@@ -12,6 +12,8 @@
 #include "09. MeshDemo.h"
 #include "10. GlobalTestDemo.h"
 #include "11. DepthStencilDemo.h"
+#include "12. AmbientDemo.h"
+#include "13. DiffuseDemo.h"
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
@@ -22,8 +24,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	desc.hWnd = NULL;
 	desc.width = 800;
 	desc.height = 600;
-	desc.clearColor = Color(0.5f, 0.5f, 0.5f, 0.5f);
-	desc.app = make_shared<DepthStencilDemo>();		// 여기가 바로 실행단위. 어떤 앱을 실행시킬 것인지 결정할 수 있다.
+	desc.clearColor = Color(0.f, 0.f, 0.f, 0.f);
+	desc.app = make_shared<DiffuseDemo>();		// 여기가 바로 실행단위. 어떤 앱을 실행시킬 것인지 결정할 수 있다.
 
 	GAME->Run(desc);
 

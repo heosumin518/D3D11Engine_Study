@@ -1,14 +1,14 @@
 #include "pch.h"
-#include "11. DepthStencilDemo.h"
+#include "13. DiffuseDemo.h"
 #include "GeometryHelper.h"
 #include "Camera.h"
 #include "CameraScript.h"
 #include "MeshRenderer.h"
 
-void DepthStencilDemo::Init()
+void DiffuseDemo::Init()
 {
 	RESOURCES->Init();
-	_shader = make_shared<Shader>(L"08. GlobalTest.fx");
+	_shader = make_shared<Shader>(L"10. Lighting_Diffuse.fx");
 
 	// Camera
 	_camera = make_shared<GameObject>();
@@ -51,16 +51,33 @@ void DepthStencilDemo::Init()
 	RENDER->Init(_shader);
 }
 
-void DepthStencilDemo::Update()
+void DiffuseDemo::Update()
 {
 	_camera->Update();		// 원래는 씬에 있어야 하는 것.
 	RENDER->Update();
 
-	_obj->Update();
-	_obj2->Update();
+	//
+	Vec4 lightDiffuse{1.f, 1.f, 1.f, 1.f};
+	_shader->GetVector("LightDiffuse")->SetFloatVector((float*)&lightDiffuse);
+
+	Vec3 lightDir{ 1.f, -1.f, 1.f };
+	lightDir.Normalize();
+	_shader->GetVector("LightDir")->SetFloatVector((float*)&lightDir);
+
+	{
+		Vec4 material(1.f);
+		_shader->GetVector("MaterialDiffuse")->SetFloatVector((float*)&material);
+		_obj->Update();
+	}
+
+	{
+		Vec4 material(1.f);
+		_shader->GetVector("MaterialDiffuse")->SetFloatVector((float*)&material);
+		_obj2->Update();
+	}
 }
 
-void DepthStencilDemo::Render()
+void DiffuseDemo::Render()
 {
 
 }
