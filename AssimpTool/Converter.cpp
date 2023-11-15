@@ -181,6 +181,59 @@ void Converter::WriteMaterialData(wstring finalPath)
 
 string Converter::WriteTexture(string saveFolder, string file)
 {
-	return "";
+	string fileName = filesystem::path(file).filename().string();
+	string folderName = filesystem::path(saveFolder).filename().string();
+
+	const aiTexture* srcTexture = _scene->GetEmbeddedTexture(file.c_str());
+	if (srcTexture)		// 모델링 파일 (ex. fbx)에 텍스쳐가 포함되어 있는 경우
+	{
+		string pathStr = saveFolder + fileName;
+
+		if (srcTexture->mHeight == 0)	// 바이너리 모드로 생성.
+		{
+			//shared_ptr<FileUtils> file = make_shared<FileUtils>();
+			//file->Open(Utils::ToWString(pathStr), FileMode::Write);
+			//file->Write(srcTexture->pcData, srcTexture->mWidth);
+		}
+		else
+		{
+			D3D11_TEXTURE2D_DESC desc;
+			ZeroMemory(&desc, sizeof(D3D11_TEXTURE2D_DESC));
+			desc.Width = srcTexture->mWidth;
+			desc.Height = srcTexture->mHeight;
+			desc.MipLevels = 1;
+			desc.ArraySize = 1;
+			desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+			desc.SampleDesc.Count = 1;
+			desc.SampleDesc.Quality = 0;
+			desc.Usage = D3D11_USAGE_IMMUTABLE;
+
+			D3D11_SUBRESOURCE_DATA subResource = { 0 };
+			subResource.pSysMem = srcTexture->pcData;
+
+			ComPtr<ID3D11Texture2D> texture;
+			HRESULT hr = DEVICE->CreateTexture2D(&desc, &subResource, texture.GetAddressOf());
+			CHECK(hr);
+
+			DirectX::ScratchImage img;
+			::CaptureTexture(DEVICE.Get(), DC.Get(), texture.Get(), img);
+
+			// Save To File
+			hr = DirectX::SaveToDDSFile(*img.GetImages(), DirectX::DDS_FLAGS_NONE, Utils::ToWString(fileName).c_str());
+			CHECK(hr);
+		}
+	}
+	else
+	{
+		string originStr = (filesystem::path(_assetPath) / folderName / file).string();
+		Utils::Replace(originStr, "\\", "/");
+
+		string pathStr = (filesystem::path(saveFolder) / fileName).string();
+		Utils::Replace(pathStr, "\\", "/");
+
+		::CopyFileA(originStr.c_str(), pathStr.c_str(), false);
+	}
+
+	return fileName;
 }
 

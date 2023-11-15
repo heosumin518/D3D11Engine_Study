@@ -18,6 +18,20 @@ void AssimpTool::Init()
 		// CustomData (File) -> Memory
 
 	}
+
+	{
+		shared_ptr<Converter> converter = make_shared<Converter>();
+
+		// FBX -> Memory
+		converter->ReadAssetFile(L"Tower/Tower.fbx");
+
+		// Memory -> CustomData
+		converter->ExportMaterialData(L"Tower/Tower");
+		converter->ExportModelData(L"Tower/Tower");
+
+		// CustomData (File) -> Memory
+
+	}
 }
 
 void AssimpTool::Update()
