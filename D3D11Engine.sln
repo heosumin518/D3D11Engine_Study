@@ -23,6 +23,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "07_FBXStaticMeshLoading", "
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Engine", "Engine\Engine.vcxproj", "{6B60A3CE-EA6A-4C91-AB69-6823DD8A69CD}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AssimpTool", "AssimpTool\AssimpTool.vcxproj", "{C1D1D4AC-0CB2-44FD-9653-5745F82148E3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{47281029-DB77-48C4-BBF9-7407822D2066}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -111,9 +115,20 @@ Global
 		{6B60A3CE-EA6A-4C91-AB69-6823DD8A69CD}.Release|x64.Build.0 = Release|x64
 		{6B60A3CE-EA6A-4C91-AB69-6823DD8A69CD}.Release|x86.ActiveCfg = Release|Win32
 		{6B60A3CE-EA6A-4C91-AB69-6823DD8A69CD}.Release|x86.Build.0 = Release|Win32
+		{C1D1D4AC-0CB2-44FD-9653-5745F82148E3}.Debug|x64.ActiveCfg = Debug|x64
+		{C1D1D4AC-0CB2-44FD-9653-5745F82148E3}.Debug|x64.Build.0 = Debug|x64
+		{C1D1D4AC-0CB2-44FD-9653-5745F82148E3}.Debug|x86.ActiveCfg = Debug|Win32
+		{C1D1D4AC-0CB2-44FD-9653-5745F82148E3}.Debug|x86.Build.0 = Debug|Win32
+		{C1D1D4AC-0CB2-44FD-9653-5745F82148E3}.Release|x64.ActiveCfg = Release|x64
+		{C1D1D4AC-0CB2-44FD-9653-5745F82148E3}.Release|x64.Build.0 = Release|x64
+		{C1D1D4AC-0CB2-44FD-9653-5745F82148E3}.Release|x86.ActiveCfg = Release|Win32
+		{C1D1D4AC-0CB2-44FD-9653-5745F82148E3}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C1D1D4AC-0CB2-44FD-9653-5745F82148E3} = {47281029-DB77-48C4-BBF9-7407822D2066}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5103C42F-6C3F-4989-8DEE-F3E5BA25B556}
