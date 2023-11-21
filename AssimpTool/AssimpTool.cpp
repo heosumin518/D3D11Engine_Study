@@ -8,15 +8,28 @@ void AssimpTool::Init()
 		shared_ptr<Converter> converter = make_shared<Converter>();
 
 		// FBX -> Memory
-		converter->ReadAssetFile(L"House/House.fbx");
+		//converter->ReadAssetFile(L"Tank/Tank.fbx");
+		converter->ReadAssetFile(L"Zelda/zelda.fbx");
+
+		// Memory -> CustomData
+		converter->ExportMaterialData(L"Zelda/Zelda");
+		converter->ExportModelData(L"Zelda/Zelda");
+
+		// CustomData (File) -> Memory
+	}
+
+	{
+		shared_ptr<Converter> converter = make_shared<Converter>();
+
+		// FBX -> Memory
+		converter->ReadAssetFile(L"Tank/Tank.fbx");
 		//converter->ReadAssetFile(L"Zelda/zelda.fbx");
 
 		// Memory -> CustomData
-		converter->ExportMaterialData(L"House/House");
-		converter->ExportModelData(L"House/House");
+		converter->ExportMaterialData(L"Tank/Tank");
+		converter->ExportModelData(L"Tank/Tank");
 
 		// CustomData (File) -> Memory
-
 	}
 
 	{
@@ -30,7 +43,6 @@ void AssimpTool::Init()
 		converter->ExportModelData(L"Tower/Tower");
 
 		// CustomData (File) -> Memory
-
 	}
 }
 

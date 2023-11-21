@@ -2,6 +2,7 @@
 #include "Main.h"
 #include "Engine/Game.h"
 #include "AssimpTool.h"
+#include "StaticMeshDemo.h"
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
@@ -13,7 +14,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	desc.width = 800;
 	desc.height = 600;
 	desc.clearColor = Color(0.f, 0.f, 0.f, 0.f);
-	desc.app = make_shared<AssimpTool>();		// 여기가 바로 실행단위. 어떤 앱을 실행시킬 것인지 결정할 수 있다.
+	//desc.app = make_shared<AssimpTool>();
+	desc.app = make_shared<StaticMeshDemo>();
 
 	GAME->Run(desc);
 

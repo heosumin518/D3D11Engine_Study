@@ -55,7 +55,6 @@ using namespace Microsoft::WRL;
 #endif
 
 // Managers
-#include "Game.h"
 #include "Graphics.h"
 #include "InputManager.h"
 #include "TimeManager.h"
@@ -74,3 +73,4 @@ using namespace Microsoft::WRL;
 #include "Transform.h"
 #include "Texture.h"
 #include "Mesh.h"
+#include "Game.h"

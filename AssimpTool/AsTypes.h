@@ -1,6 +1,6 @@
 #pragma once
 
-using VertexType = VertexTextureNormalTangentData;
+using VertexType = VertexTextureNormalTangentBlendData;
 
 struct asBone
 {

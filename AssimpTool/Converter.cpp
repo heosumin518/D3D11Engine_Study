@@ -2,8 +2,8 @@
 #include "Converter.h"
 #include "Utils.h"
 #include <filesystem>
-
-#include "../Engine/tinyxml2.h"
+#include "tinyxml2.h"
+#include "FileUtils.h"
 
 
 Converter::Converter()
@@ -51,15 +51,118 @@ void Converter::ExportMaterialData(wstring savePath)
 
 void Converter::ReadModelData(aiNode* node, int32 index, int32 parent)
 {
+	shared_ptr<asBone> bone = make_shared<asBone>();
+	bone->index = index;
+	bone->parent = parent;
+	bone->name = node->mName.C_Str();
 
+	// Relative Transform 
+	Matrix transform(node->mTransformation[0]);		// Matrix 안을 보면 첫번째 주소하나만 주어도 4x4 를 다 복사해준다.
+	bone->transform = transform.Transpose();	// fbx 포맷에서는 순서가 뒤바껴있기 때문에 한번 Transpose
+
+	// Root (Local)
+	Matrix matParent = Matrix::Identity;
+	if (parent >= 0)	// 부모 즉, 직속상관이 있다면
+		matParent = _bones[parent]->transform;	// 부모 트랜스폼을 가져온다.
+
+	// Local (Root) Transform
+	bone->transform = bone->transform * matParent;	// 부모행렬과 곱하여 root Transform 가져오기.
+	_bones.push_back(bone);
+
+	// Mesh
+	ReadMeshData(node, index);
+	
+	// 재귀 함수
+	for (uint32 i = 0; i < node->mNumChildren; i++)
+		ReadModelData(node->mChildren[i], _bones.size(), index);
 }
 
 void Converter::ReadMeshData(aiNode* node, int32 bone)
 {
+	if (node->mNumMeshes < 1)
+		return;
+
+	shared_ptr<asMesh> mesh = make_shared<asMesh>();
+	mesh->name = node->mName.C_Str();
+	mesh->boneIndex = bone;
+
+	const uint32 startVertex = mesh->vertices.size();
+
+	for (uint32 i = 0; i < node->mNumMeshes; i++)
+	{
+		uint32 index = node->mMeshes[i];
+		const aiMesh* srcMesh = _scene->mMeshes[index];
+
+		// Material Name
+		const aiMaterial* material = _scene->mMaterials[srcMesh->mMaterialIndex];
+		mesh->materialName = material->GetName().C_Str();
+
+		for (uint32 v = 0; v < srcMesh->mNumVertices; v++)
+		{
+			// Vertex
+			VertexType vertex;
+			::memcpy(&vertex.position, &srcMesh->mVertices[v], sizeof(Vec3));
+
+			// UV
+			if (srcMesh->HasTextureCoords(0))
+				::memcpy(&vertex.uv, &srcMesh->mTextureCoords[0][v], sizeof(Vec2));
+
+			// Normal
+			if (srcMesh->HasNormals())
+				::memcpy(&vertex.normal, &srcMesh->mNormals[v], sizeof(Vec3));
+
+			mesh->vertices.push_back(vertex);
+		}
+
+		// Index
+		for (uint32 f = 0.f; f < srcMesh->mNumFaces; f++)
+		{
+			aiFace& face = srcMesh->mFaces[f];
+
+			for (uint32 k = 0; k < face.mNumIndices; k++)
+				mesh->indices.push_back(face.mIndices[k] + startVertex);
+		}
+	}
+
+	_meshes.push_back(mesh);
 }
 
 void Converter::WriteModelFile(wstring finalPath)
 {
+	auto path = filesystem::path(finalPath);
+
+	// 폴더가 없으면 만든다.
+	filesystem::create_directory(path.parent_path());
+
+	shared_ptr<FileUtils> file = make_shared<FileUtils>();
+	file->Open(finalPath, FileMode::Write);
+
+	// Bone Data
+	file->Write<uint32>(_bones.size());
+	for (shared_ptr<asBone>& bone : _bones)
+	{
+		file->Write<int32>(bone->index);
+		file->Write<string>(bone->name);
+		file->Write<int32>(bone->parent);
+		file->Write<Matrix>(bone->transform);
+	}
+
+	// Mesh Data
+	file->Write<uint32>(_meshes.size());
+	for (shared_ptr<asMesh>& meshData : _meshes)
+	{
+		file->Write<string>(meshData->name);
+		file->Write<int32>(meshData->boneIndex);
+		file->Write<string>(meshData->materialName);
+
+		// Vertex Data
+		file->Write<uint32>(meshData->vertices.size());
+		file->Write(&meshData->vertices[0], sizeof(VertexType) * meshData->vertices.size());
+
+		// Index Data
+		file->Write<uint32>(meshData->indices.size());
+		file->Write(&meshData->indices[0], sizeof(uint32) * meshData->indices.size());
+	}
 }
 
 void Converter::ReadMaterialData()
@@ -191,9 +294,9 @@ string Converter::WriteTexture(string saveFolder, string file)
 
 		if (srcTexture->mHeight == 0)	// 바이너리 모드로 생성.
 		{
-			//shared_ptr<FileUtils> file = make_shared<FileUtils>();
-			//file->Open(Utils::ToWString(pathStr), FileMode::Write);
-			//file->Write(srcTexture->pcData, srcTexture->mWidth);
+			shared_ptr<FileUtils> file = make_shared<FileUtils>();
+			file->Open(Utils::ToWString(pathStr), FileMode::Write);
+			file->Write(srcTexture->pcData, srcTexture->mWidth);
 		}
 		else
 		{

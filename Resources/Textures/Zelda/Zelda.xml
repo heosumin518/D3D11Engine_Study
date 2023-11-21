@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Materials>
+    <Material>
+        <Name>mat_zeldaEyes</Name>
+        <DiffuseFile>eyes_diff.png</DiffuseFile>
+        <SpecularFile>eyes_diff.png</SpecularFile>
+        <NormalFile>eyes_diff.png</NormalFile>
+        <Ambient R="0" G="0" B="0" A="1"/>
+        <Diffuse R="0" G="0" B="0" A="1"/>
+        <Specular R="0" G="0" B="0" A="1"/>
+        <Emissive R="0" G="0" B="0" A="1"/>
+    </Material>
+    <Material>
+        <Name>mat_zeldaHair</Name>
+        <DiffuseFile>hair_diff.png</DiffuseFile>
+        <SpecularFile>hair_diff.png</SpecularFile>
+        <NormalFile>hair_diff.png</NormalFile>
+        <Ambient R="0" G="0" B="0" A="1"/>
+        <Diffuse R="0" G="0" B="0" A="1"/>
+        <Specular R="0" G="0" B="0" A="1"/>
+        <Emissive R="0" G="0" B="0" A="1"/>
+    </Material>
+    <Material>
+        <Name>mat_zelda</Name>
+        <DiffuseFile>zelda_diff.png</DiffuseFile>
+        <SpecularFile>zelda_diff.png</SpecularFile>
+        <NormalFile>zelda_diff.png</NormalFile>
+        <Ambient R="0" G="0" B="0" A="1"/>
+        <Diffuse R="0" G="0" B="0" A="1"/>
+        <Specular R="0" G="0" B="0" A="1"/>
+        <Emissive R="0" G="0" B="0" A="1"/>
+    </Material>
+    <Material>
+        <Name>mat_misc</Name>
+        <DiffuseFile>misc_diff.png</DiffuseFile>
+        <SpecularFile>misc_diff.png</SpecularFile>
+        <NormalFile>misc_diff.png</NormalFile>
+        <Ambient R="0" G="0" B="0" A="1"/>
+        <Diffuse R="0" G="0" B="0" A="1"/>
+        <Specular R="0" G="0" B="0" A="1"/>
+        <Emissive R="0" G="0" B="0" A="1"/>
+    </Material>
+    <Material>
+        <Name>mat_fire</Name>
+        <DiffuseFile>fire_diff.png</DiffuseFile>
+        <SpecularFile>fire_diff.png</SpecularFile>
+        <NormalFile>fire_diff.png</NormalFile>
+        <Ambient R="0" G="0" B="0" A="1"/>
+        <Diffuse R="0" G="0" B="0" A="1"/>
+        <Specular R="0" G="0" B="0" A="1"/>
+        <Emissive R="0" G="0" B="0" A="1"/>
+    </Material>
+    <Material>
+        <Name>mat_environment</Name>
+        <DiffuseFile>setCave_diff.png</DiffuseFile>
+        <SpecularFile>setCave_diff.png</SpecularFile>
+        <NormalFile>setCave_diff.png</NormalFile>
+        <Ambient R="0" G="0" B="0" A="1"/>
+        <Diffuse R="0" G="0" B="0" A="1"/>
+        <Specular R="0" G="0" B="0" A="1"/>
+        <Emissive R="0" G="0" B="0" A="1"/>
+    </Material>
+</Materials>
