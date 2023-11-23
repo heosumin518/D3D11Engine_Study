@@ -65,3 +65,9 @@ HRESULT CreateTextureFromFile(ID3D11Device* d3dDevice, const wchar_t* szFileName
 	}
 	return S_OK;
 }
+
+std::wstring ToWString(const std::string& s)
+{
+	std::wstring wsTmp(s.begin(), s.end());
+	return wsTmp;
+}

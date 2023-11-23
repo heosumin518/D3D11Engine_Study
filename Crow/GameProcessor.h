@@ -24,6 +24,8 @@ protected:
 	void SetViewport();
 	void CreateDepthStencilView();
 
+	void CreateBlendState();
+
 	virtual void CreateGeometry() {};
 	virtual void CreateInputLayout() {};
 	virtual void CreateVertexShader();
@@ -70,6 +72,7 @@ protected:
 
 	// RS
 	ComPtr<ID3D11DepthStencilView> m_depthStancilView = nullptr;
+	ComPtr<ID3D11BlendState> m_blendState = nullptr;
 
 	// PS
 	ComPtr<ID3D11PixelShader> m_pixelShader = nullptr;

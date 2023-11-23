@@ -1,4 +1,5 @@
 #pragma once
+#include "ModelLoader.h"
 
 struct Vertex
 {
@@ -8,29 +9,36 @@ struct Vertex
 	Vector3 tangent;
 };
 
-static aiMesh;
 class Mesh
 {
 public:
-	Mesh(ComPtr<ID3D11Device> device);
+	Mesh();
 	~Mesh();
 
-	void CreateVertexBuffer(Vertex* vertices, UINT vertexCount);
-	void CreateIndexBuffer(WORD* indices, UINT indexCount);
-	void Create(aiMesh* mesh);
+	void CreateVertexBuffer(ComPtr<ID3D11Device> device, vector<Vertex>& vertices);
+	void CreateIndexBuffer(ComPtr<ID3D11Device> device, vector<WORD>& indices);
+
+public:
+	UINT GetIndexCount() const { return m_indexCount; }
+	UINT GetMaterialIndex() const { return m_materialIndex; }
+	const UINT* GetVertexBufferStride() { return &m_vertexBufferStride; }
+	const UINT* GetVertexBufferOffset() { return &m_vertexBufferOffset; }
+
+	ComPtr<ID3D11Buffer> GetIndexBuffer() { return m_indexBuffer; }
+	ComPtr<ID3D11Buffer> GetVertexBuffer() { return m_vertexBuffer; }
 
 private:
-	ComPtr<ID3D11Device> m_device;
+	friend ModelLoader;
+	friend Model;
+
 	ComPtr<ID3D11Buffer> m_vertexBuffer;
 	ComPtr<ID3D11Buffer> m_indexBuffer;
 
 	UINT m_vertexCount = 0;
 	UINT m_vertexBufferStride = 0;	// 버텍스 하나의 크기
 	UINT m_vertexBufferOffset = 0;	// 버텍스 버퍼의 오프셋
-	UINT m_indexCount = 0;	// 인덱스 개수
-	UINT m_indexBufferStride = 0;
-	UINT m_indexBufferOffset = 0;
-	UINT m_materialIndex = 0;	// 머터리얼 인덱스
+	UINT m_indexCount = 0;			// 인덱스 개수
+	UINT m_materialIndex = 0;		// 머터리얼 인덱스
 
 };
 

@@ -12,6 +12,8 @@
 // STL
 #include <vector>
 #include <string>
+#include <memory>
+#include <filesystem>
 using namespace std;
 
 // ImGUI

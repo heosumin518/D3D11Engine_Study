@@ -22,8 +22,8 @@ void StaticMeshDemo::Init()
 	_camera->AddComponent(make_shared<CameraScript>());
 
 	//CreateTower();
-	CreateTank();
-	//CreateZelda();
+	//CreateTank();
+	CreateZelda();
 
 	RENDER->Init(_shader);
 }
