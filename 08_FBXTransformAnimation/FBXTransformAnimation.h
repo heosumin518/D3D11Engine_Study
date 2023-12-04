@@ -48,12 +48,12 @@ struct CB_Material
 static_assert((sizeof(CB_Material) % 16) == 0,
 	"Constant Buffer size must be 16-byte aligned");
 
-class FBXStaticMeshLoading :
+class FBXTransformAnimation :
 	public GameProcessor
 {
 public:
-	FBXStaticMeshLoading(const int32& width, const int32& height, const std::wstring& name);
-	virtual ~FBXStaticMeshLoading();
+	FBXTransformAnimation(const int32& width, const int32& height, const std::wstring& name);
+	virtual ~FBXTransformAnimation();
 
 	void Initialize() override;
 	void Update() override;

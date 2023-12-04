@@ -34,6 +34,8 @@ private:
 	ComPtr<ID3D11Buffer> m_vertexBuffer;
 	ComPtr<ID3D11Buffer> m_indexBuffer;
 
+	string m_name;
+
 	UINT m_vertexCount = 0;
 	UINT m_vertexBufferStride = 0;	// 버텍스 하나의 크기
 	UINT m_vertexBufferOffset = 0;	// 버텍스 버퍼의 오프셋

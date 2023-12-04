@@ -1,4 +1,5 @@
 #pragma once
+#include "ModelLoader.h"
 
 
 class Node
@@ -10,10 +11,15 @@ public:
 public:
 	void Update(); 
 
+	friend ModelLoader;
+
 private:
-		string m_name;
-		int32 m_index = -1;
-		int32 m_parent = -1;
-		Matrix m_transform;
+	string m_name;
+	int32 m_index;
+	int32 m_parentIndex;
+	shared_ptr<Node> parent;
+
+	Matrix m_transform;
+	vector<shared_ptr<Node>> m_children;
 };
 

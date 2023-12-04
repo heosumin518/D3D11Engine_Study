@@ -1,19 +1,19 @@
 #include "pch.h"
-#include "FBXStaticMeshLoading.h"
+#include "FBXTransformAnimation.h"
 #include "ModelLoader.h"
 
-FBXStaticMeshLoading::FBXStaticMeshLoading(const int32& width, const int32& height, const std::wstring& name)
+FBXTransformAnimation::FBXTransformAnimation(const int32& width, const int32& height, const std::wstring& name)
 	: GameProcessor(width, height, name)
 {
 
 }
 
-FBXStaticMeshLoading::~FBXStaticMeshLoading()
+FBXTransformAnimation::~FBXTransformAnimation()
 {
 	GameProcessor::UnInitImGUI();
 }
 
-void FBXStaticMeshLoading::Initialize()
+void FBXTransformAnimation::Initialize()
 {
 	GameProcessor::CreateDeviceAndSwapChain();
 	GameProcessor::CreateRenderTargetView();
@@ -31,14 +31,15 @@ void FBXStaticMeshLoading::Initialize()
 
 	// fbx 파일 로드하여 모델 생성
 	ModelLoader loader(m_device);
-	m_models.push_back(loader.LoadModelFile("../Resources/zeldaPosed001.fbx"));
+	m_models.push_back(loader.LoadModelFile("../Resources/dummy_walk_test_1023.fbx"));
+	//m_models.push_back(loader.LoadModelFile("../Resources/zeldaPosed001.fbx"));
 	//m_models.push_back(loader.LoadModelFile("../Resources/Character.fbx"));
 
 
 	GameProcessor::InitImGUI();
 }
 
-void FBXStaticMeshLoading::Update()
+void FBXTransformAnimation::Update()
 {
 	GameProcessor::Update();
 
@@ -72,7 +73,7 @@ void FBXStaticMeshLoading::Update()
 	}
 }
 
-void FBXStaticMeshLoading::Render()
+void FBXTransformAnimation::Render()
 {
 	RenderBegin();
 
@@ -159,7 +160,7 @@ void FBXStaticMeshLoading::Render()
 	RenderEnd();
 }
 
-void FBXStaticMeshLoading::RenderImGUI()
+void FBXTransformAnimation::RenderImGUI()
 {
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
@@ -263,7 +264,7 @@ void FBXStaticMeshLoading::RenderImGUI()
 
 
 // Render() 에서 파이프라인에 바인딩할 InputLayout 생성 
-void FBXStaticMeshLoading::CreateInputLayout()
+void FBXTransformAnimation::CreateInputLayout()
 {
 	D3D11_INPUT_ELEMENT_DESC layout[] =  // 인풋 레이아웃은 버텍스 쉐이더가 입력받을 데이터의 형식을 지정한다.
 	{
@@ -278,7 +279,7 @@ void FBXStaticMeshLoading::CreateInputLayout()
 	HR_T(m_device->CreateInputLayout(layout, count, m_vsBlob->GetBufferPointer(), m_vsBlob->GetBufferSize(), m_inputLayout.GetAddressOf()));
 }
 
-void FBXStaticMeshLoading::CreateConstantBuffer()
+void FBXTransformAnimation::CreateConstantBuffer()
 {
 	// Transform 상수 버퍼 정보 생성
 	D3D11_BUFFER_DESC CBTransformDesc;

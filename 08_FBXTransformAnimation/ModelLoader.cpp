@@ -2,6 +2,7 @@
 #include "ModelLoader.h"
 #include "Model.h"
 #include "Mesh.h"
+#include "Node.h"
 #include "Material.h"
 
 ModelLoader::ModelLoader(ComPtr<ID3D11Device> device)
@@ -28,11 +29,12 @@ shared_ptr<Model> ModelLoader::LoadModelFile(const string& file)
 	);
 	assert(m_scene != nullptr);
 
-	CreateNode(m_scene->mRootNode);
+	ReadModel(m_scene->mRootNode, -1, -1);
 	CreateMaterial();
 
 	model->m_meshes = m_meshes;
 	model->m_materials = m_materials;
+	model->m_nodes = m_bones;
 
 	m_importer->FreeScene();
 
@@ -44,14 +46,33 @@ void ModelLoader::CreateAnimation(aiAnimation* animation)
 
 }
 
-void ModelLoader::CreateNode(aiNode* node)
+void ModelLoader::ReadModel(aiNode* node, int32 index, int32 parentIndex)
 {
+	shared_ptr<Node> bone = make_shared<Node>();
+	bone->m_index = index;
+	bone->m_parentIndex = parentIndex;
+	bone->m_name = node->mName.C_Str();
+
+	// Relative Transform
+	Matrix transform(node->mTransformation[0]);
+	bone->m_transform = transform.Transpose();	// d3d는 열 우선(column-major), 
+												// Assimp의 행렬은 행 우선(row-major) 행렬이기에 전치한다.
+	// 2) Root (Local)
+	Matrix matParent = Matrix::Identity;
+	if (parentIndex >= 0)	// 부모행렬이 존재한다면 부모 행렬을 구한 뒤 곱해준다.
+		matParent = m_bones[parentIndex]->m_transform;
+
+	// Local (Root) Transform
+	bone->m_transform = bone->m_transform * matParent;
+
+	m_bones.push_back(bone);
+
 	// Mesh
 	CreateMesh(node);
 
 	// 재귀 함수
 	for (UINT i = 0; i < node->mNumChildren; i++)
-		CreateNode(node->mChildren[i]);
+		ReadModel(node->mChildren[i], m_bones.size(), index);
 }
 
 void ModelLoader::CreateMesh(aiNode* node)
@@ -60,6 +81,7 @@ void ModelLoader::CreateMesh(aiNode* node)
 		return;
 
 	shared_ptr<Mesh> mesh = make_shared<Mesh>();
+	mesh->m_name = node->mName.C_Str();
 
 	for (UINT i = 0; i < node->mNumMeshes; i++)
 	{
@@ -68,6 +90,7 @@ void ModelLoader::CreateMesh(aiNode* node)
 
 		// 버텍스 정보 생성
 		vector<Vertex> vertices;
+
 		for (UINT v = 0; v < srcMesh->mNumVertices; v++)
 		{
 			// Vertex
@@ -101,7 +124,21 @@ void ModelLoader::CreateMesh(aiNode* node)
 		mesh->CreateIndexBuffer(m_device, indices);
 
 		mesh->m_materialIndex = srcMesh->mMaterialIndex;
+
+		//// 인덱스 정보 생성
+		//vector<WORD> indices;
+		//for (UINT f = 0; f < srcMesh->mNumFaces; f++)
+		//{
+		//	aiFace& face = srcMesh->mFaces[f];
+
+		//	for (uint32 k = 0; i < face.mNumIndices; k++)	// 현재 면(face)을 구성하는 인덱스의 수 만큼 인덱스를 구하여 저장한다. 보통은 삼각형이니 3번 반복하게 된다.
+		//		indices.push_back(face.mIndices[k] + startVertex);
+		//}
+		//mesh->CreateIndexBuffer(m_device, indices);
+
+		//mesh->m_materialIndex = srcMesh->mMaterialIndex;
 	}
+
 
 	m_meshes.push_back(mesh);
 }

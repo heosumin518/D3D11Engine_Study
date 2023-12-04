@@ -2,6 +2,7 @@
 #include <filesystem>
 // FBX 파일로부터 정보를 로드하여 Model 객체에 넘겨주는 역할을 하는 클래스
 
+class Node;
 class Model;
 class Mesh;
 class Material;
@@ -14,7 +15,7 @@ public:
 public:
 	shared_ptr<Model> LoadModelFile(const string& file);
 	void CreateAnimation(aiAnimation* animation);
-	void CreateNode(aiNode* node);
+	void ReadModel(aiNode* node, int32 index, int32 parentIndex);
 	void CreateMesh(aiNode* node);
 	void CreateMaterial();
 
@@ -26,7 +27,7 @@ private:
 	const aiScene* m_scene = nullptr;
 
 private:
-	//vector<shared_ptr<Bone>> m_bones;
+	vector<shared_ptr<Node>> m_bones;
 	vector<shared_ptr<Mesh>> m_meshes;
 	vector<shared_ptr<Material>> m_materials;
 };
