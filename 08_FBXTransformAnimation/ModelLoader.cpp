@@ -4,6 +4,7 @@
 #include "Mesh.h"
 #include "Node.h"
 #include "Material.h"
+#include "Animation.h"
 
 ModelLoader::ModelLoader(ComPtr<ID3D11Device> device)
 	: m_device(device)
@@ -31,19 +32,109 @@ shared_ptr<Model> ModelLoader::LoadModelFile(const string& file)
 
 	ReadModel(m_scene->mRootNode, -1, -1);
 	CreateMaterial();
+	ReadAnimationData(m_scene->mAnimations[0]);
 
 	model->m_meshes = m_meshes;
 	model->m_materials = m_materials;
 	model->m_nodes = m_bones;
+	model->m_animations = m_animations;
 
 	m_importer->FreeScene();
 
 	return model;
 }
 
-void ModelLoader::CreateAnimation(aiAnimation* animation)
+void ModelLoader::ReadAnimationData(aiAnimation* srcAnimation)
 {
+	if (!m_scene->HasAnimations())
+		return;
 
+	shared_ptr<Animation> animation = make_shared<Animation>();
+	animation->name = srcAnimation->mName.C_Str();
+	animation->frameRate = (float)srcAnimation->mTicksPerSecond;
+	animation->frameCount = (uint32)srcAnimation->mDuration + 1;
+
+	map<string, shared_ptr<NodeAnimation>> cacheAnimNodes;
+
+	for (uint32 i = 0; i < srcAnimation->mNumChannels; i++)
+	{
+		aiNodeAnim* srcNode = srcAnimation->mChannels[i];
+
+		// 애니메이션 노드 데이터 파싱
+		shared_ptr<NodeAnimation> node = ParseAnimationNode(animation, srcNode);
+
+		// 현재 찾은 노드 중에 제일 긴 시간으로 애니메이션 시간 갱신
+		animation->duration = max(animation->duration, node->animationKeys.back().time);
+
+		animation->nodeAnimations.push_back(node);
+	}
+
+	m_animations.push_back(animation);
+}
+
+shared_ptr<NodeAnimation> ModelLoader::ParseAnimationNode(shared_ptr<Animation> animation, aiNodeAnim* srcNode)
+{
+	shared_ptr<NodeAnimation> node = make_shared<NodeAnimation>();
+	node->name = srcNode->mNodeName;
+
+	uint32 keyCount = max(max(srcNode->mNumPositionKeys, srcNode->mNumScalingKeys), srcNode->mNumRotationKeys);
+
+	for (uint32 k = 0; k < keyCount; k++)
+	{
+		AnimationKey frameData;
+
+		bool found = false;
+		uint32 t = node->animationKeys.size();
+
+		// Position
+		if (::fabsf((float)srcNode->mPositionKeys[k].mTime - (float)t) <= 0.0001f)
+		{
+			aiVectorKey key = srcNode->mPositionKeys[k];
+			frameData.time = (float)key.mTime;
+			::memcpy_s(&frameData.translation, sizeof(Vector3), &key.mValue, sizeof(aiVector3D));
+
+			found = true;
+		}
+
+		// Roatation
+		if (::fabsf((float)srcNode->mRotationKeys[k].mTime - (float)t) <= 0.0001f)
+		{
+			aiQuatKey key = srcNode->mRotationKeys[k];
+			frameData.time = (float)key.mTime;
+
+			frameData.rotation.x = key.mValue.x;
+			frameData.rotation.y = key.mValue.y;
+			frameData.rotation.z = key.mValue.z;
+			frameData.rotation.w = key.mValue.w;
+
+			found = true;
+		}
+
+		// Scale
+		if (::fabsf((float)srcNode->mScalingKeys[k].mTime - (float)t) <= 0.0001f)
+		{
+			aiVectorKey key = srcNode->mScalingKeys[k];
+			frameData.time = (float)key.mTime;
+			::memcpy_s(&frameData.scale, sizeof(Vector3), &key.mValue, sizeof(aiVector3D));
+
+			found = true;
+		}
+
+		if (found == true)
+			node->animationKeys.push_back(frameData);
+	}
+
+	// Keyframe 늘려주기
+	if (node->animationKeys.size() < animation->frameCount)
+	{
+		uint32 count = animation->frameCount - node->animationKeys.size();
+		AnimationKey keyFrame = node->animationKeys.back();
+
+		for (uint32 n = 0; n < count; n++)
+			node->animationKeys.push_back(keyFrame);
+	}
+
+	return node;
 }
 
 void ModelLoader::ReadModel(aiNode* node, int32 index, int32 parentIndex)

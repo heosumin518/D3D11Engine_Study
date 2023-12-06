@@ -31,7 +31,7 @@ void FBXTransformAnimation::Initialize()
 
 	// fbx 파일 로드하여 모델 생성
 	ModelLoader loader(m_device);
-	m_models.push_back(loader.LoadModelFile("../Resources/dummy_walk_test_1023.fbx"));
+	m_models.push_back(loader.LoadModelFile("../Resources/BoxHuman.fbx"));
 	//m_models.push_back(loader.LoadModelFile("../Resources/zeldaPosed001.fbx"));
 	//m_models.push_back(loader.LoadModelFile("../Resources/Character.fbx"));
 

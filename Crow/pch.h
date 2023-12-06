@@ -10,6 +10,7 @@
 #include <comdef.h>
 
 // STL
+#include <map>
 #include <vector>
 #include <string>
 #include <memory>

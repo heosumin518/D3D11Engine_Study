@@ -2,6 +2,7 @@
 #include "Node.h"
 #include "Mesh.h"
 #include "Material.h"
+#include "Animation.h"
 #include "ModelLoader.h"
 
 /// Bone, Mesh, Material을 가지고 있다.
@@ -25,5 +26,6 @@ private:
 	vector<shared_ptr<Node>> m_nodes;
 	vector<shared_ptr<Mesh>> m_meshes;
 	vector<shared_ptr<Material>> m_materials;
+	vector<shared_ptr<Animation>> m_animations;
 };
 
