@@ -35,7 +35,6 @@ void FBXTransformAnimation::Initialize()
 	//m_models.push_back(loader.LoadModelFile("../Resources/zeldaPosed001.fbx"));
 	//m_models.push_back(loader.LoadModelFile("../Resources/Character.fbx"));
 
-
 	GameProcessor::InitImGUI();
 }
 
@@ -56,7 +55,7 @@ void FBXTransformAnimation::Update()
 		m_projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, g_winSizeX / static_cast<FLOAT>(g_winSizeY), 1.0f, 10000.0f);		// 0.01f, 100.0f °¢°¢ near ¿Í far
 	}
 
-	// update cube
+	// update model
 	{
 		Matrix scale = Matrix::CreateScale(m_modelScale);
 		Matrix rotation = Matrix::CreateFromYawPitchRoll(Vector3(XMConvertToRadians(m_rotation.x), XMConvertToRadians(m_rotation.y), 0));

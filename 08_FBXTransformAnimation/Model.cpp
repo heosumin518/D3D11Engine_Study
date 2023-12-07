@@ -11,6 +11,20 @@ Model::~Model()
 	
 }
 
+//void Model::Update(float deltaTime)
+//{
+//
+//
+//	// 애니메이션 업데이트
+//	for (const auto& anim : m_animations)
+//		anim->Update(deltaTime);
+//
+//	// 노드 업데이트
+//	for (const auto& node : m_nodes)
+//		node->Update();
+//
+//}
+
 //void Model::Render(ComPtr<ID3D11DeviceContext> deviceContext)
 //{
 //	for (size_t i = 0; i < m_meshes.size(); i++)

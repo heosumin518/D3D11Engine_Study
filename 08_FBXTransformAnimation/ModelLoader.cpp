@@ -34,9 +34,9 @@ shared_ptr<Model> ModelLoader::LoadModelFile(const string& file)
 	CreateMaterial();
 	ReadAnimationData(m_scene->mAnimations[0]);
 
+	model->m_nodes = m_bones;
 	model->m_meshes = m_meshes;
 	model->m_materials = m_materials;
-	model->m_nodes = m_bones;
 	model->m_animations = m_animations;
 
 	m_importer->FreeScene();
@@ -53,8 +53,6 @@ void ModelLoader::ReadAnimationData(aiAnimation* srcAnimation)
 	animation->name = srcAnimation->mName.C_Str();
 	animation->frameRate = (float)srcAnimation->mTicksPerSecond;
 	animation->frameCount = (uint32)srcAnimation->mDuration + 1;
-
-	map<string, shared_ptr<NodeAnimation>> cacheAnimNodes;
 
 	for (uint32 i = 0; i < srcAnimation->mNumChannels; i++)
 	{

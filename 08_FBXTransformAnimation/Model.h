@@ -14,6 +14,7 @@ public:
 	~Model();
 
 public:
+	//void Update(float deltaTime);
 	void Render(ComPtr<ID3D11DeviceContext> deviceContext);
 
 public:
@@ -23,7 +24,7 @@ public:
 private:
 	friend ModelLoader;
 
-	vector<shared_ptr<Node>> m_nodes;
+	vector<shared_ptr<Node>> m_nodes;	// 계층구조는 parentIndex로 구분.
 	vector<shared_ptr<Mesh>> m_meshes;
 	vector<shared_ptr<Material>> m_materials;
 	vector<shared_ptr<Animation>> m_animations;
