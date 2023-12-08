@@ -31,6 +31,8 @@ protected:
 	virtual void CreateVertexShader();
 	virtual void CreatePixelShader();
 
+	void CreateRasterizeState();
+
 	void CreateSamplerState();
 
 	virtual void CreateShaderResourceView() {};
@@ -69,6 +71,9 @@ protected:
 	// VS
 	ComPtr<ID3D11VertexShader> m_vertexShader = nullptr;
 	ComPtr<ID3DBlob> m_vsBlob = nullptr;
+
+	// RAS
+	ComPtr<ID3D11RasterizerState> m_rasterizerState = nullptr;
 
 	// RS
 	ComPtr<ID3D11DepthStencilView> m_depthStancilView = nullptr;

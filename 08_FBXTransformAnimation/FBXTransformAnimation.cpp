@@ -24,6 +24,7 @@ void FBXTransformAnimation::Initialize()
 	GameProcessor::CreateVertexShader();
 	CreateInputLayout();
 	GameProcessor::CreatePixelShader();
+	GameProcessor::CreateRasterizeState();
 
 	GameProcessor::CreateSamplerState();
 
@@ -34,6 +35,11 @@ void FBXTransformAnimation::Initialize()
 	m_models.push_back(loader.LoadModelFile("../Resources/BoxHuman.fbx"));
 	//m_models.push_back(loader.LoadModelFile("../Resources/zeldaPosed001.fbx"));
 	//m_models.push_back(loader.LoadModelFile("../Resources/Character.fbx"));
+
+	for (const auto& model : m_models)
+	{
+		model->Init(m_device.Get(), m_CBModelBuffer.Get());
+	}
 
 	GameProcessor::InitImGUI();
 }
@@ -51,32 +57,39 @@ void FBXTransformAnimation::Update()
 		m_up = XMVectorSet(0.f, 1.f, 0.f, 0.f);
 
 		m_view = XMMatrixLookAtLH(m_eye, m_at, m_up);		// ViewTransform 행렬 구하기. XMMatrixLookToLH() 함수로도 구할 수 있음
-		//m_projection = XMMatrixPerspectiveFovLH(m_cameraFOV / 180.0f * 3.14f, g_winSizeX / static_cast<FLOAT>(g_winSizeY), m_cameraNear, m_cameraFar);		// 0.01f, 100.0f 각각 near 와 far
 		m_projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, g_winSizeX / static_cast<FLOAT>(g_winSizeY), 1.0f, 10000.0f);		// 0.01f, 100.0f 각각 near 와 far
-	}
 
-	// update model
-	{
-		Matrix scale = Matrix::CreateScale(m_modelScale);
-		Matrix rotation = Matrix::CreateFromYawPitchRoll(Vector3(XMConvertToRadians(m_rotation.x), XMConvertToRadians(m_rotation.y), 0));
-		m_world = scale * rotation;
-		
-		m_CBModel.world = XMMatrixTranspose(m_world);
-		m_CBModel.view = XMMatrixTranspose(m_view);
-		m_CBModel.projection = XMMatrixTranspose(m_projection);
+		m_CBCamera.position = m_cameraPos;
+		m_CBCoordinate.View = XMMatrixTranspose(m_view);
+		m_CBCoordinate.Projection = XMMatrixTranspose(m_projection);
 	}
 
 	// update light
 	{
-		m_CBLight.eyePos = m_cameraPos;
+		XMFLOAT4 lightDirection = m_directionLightDir;
+		Color lightColor = m_DirectionLightColor;
+		Vector3 ambientColor = m_ambientColor;
+		float specularPower = m_specularPower;
+
+		m_CBLight.Direction = lightDirection;
+		m_CBLight.LightColor = lightColor;
+		m_CBLight.AmbientColor = ambientColor;
+		m_CBLight.SpecularPower = specularPower;
+	}
+
+	// update IsUserTextureMap
+	{
+		m_CBUseTextureMap.UseNormalMap = m_isNormalMap;
+		m_CBUseTextureMap.UseSpecularMap = m_isSpecularMap;
+		m_CBUseTextureMap.UseGammaCorrection = m_isGammaCorrection;
 	}
 }
 
 void FBXTransformAnimation::Render()
 {
-	RenderBegin();
+	auto t = m_timer.TotalTime();
 
-	
+	RenderBegin();
 
 	// IA - VS - RS - PS - OM
 	{
@@ -91,68 +104,35 @@ void FBXTransformAnimation::Render()
 
 		// VS
 		m_deviceContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
-		m_deviceContext->VSSetConstantBuffers(0, 1, m_CBTransformBuffer.GetAddressOf());
+		m_deviceContext->VSSetConstantBuffers(0, 1, m_CBCoordinateBuffer.GetAddressOf());
 		m_deviceContext->VSSetConstantBuffers(1, 1, m_CBLightBuffer.GetAddressOf());
-		m_deviceContext->VSSetConstantBuffers(2, 1, m_CBMaterialBuffer.GetAddressOf());
+		m_deviceContext->VSSetConstantBuffers(2, 1, m_CBCameraBuffer.GetAddressOf());
+		m_deviceContext->VSSetConstantBuffers(3, 1, m_CBTextureBuffer.GetAddressOf());
 
 		// RS
+		m_deviceContext->RSSetState(m_rasterizerState.Get());
 
 		// PS
 		m_deviceContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
 		m_deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
-		m_deviceContext->PSSetConstantBuffers(0, 1, m_CBTransformBuffer.GetAddressOf());
+		m_deviceContext->PSSetConstantBuffers(0, 1, m_CBCoordinateBuffer.GetAddressOf());
 		m_deviceContext->PSSetConstantBuffers(1, 1, m_CBLightBuffer.GetAddressOf());
-		m_deviceContext->PSSetConstantBuffers(2, 1, m_CBMaterialBuffer.GetAddressOf());
+		m_deviceContext->PSSetConstantBuffers(2, 1, m_CBCameraBuffer.GetAddressOf());
+		m_deviceContext->PSSetConstantBuffers(3, 1, m_CBTextureBuffer.GetAddressOf());
 
 		// OM
-		// Render cube and Light
-		m_deviceContext->UpdateSubresource(m_CBTransformBuffer.Get(), 0, nullptr, &m_CBModel, 0, 0);
-		m_CBLight.direction.Normalize();
+		m_deviceContext->UpdateSubresource(m_CBCoordinateBuffer.Get(), 0, nullptr, &m_CBCoordinate, 0, 0);
 		m_deviceContext->UpdateSubresource(m_CBLightBuffer.Get(), 0, nullptr, &m_CBLight, 0, 0);
-		m_deviceContext->UpdateSubresource(m_CBMaterialBuffer.Get(), 0, nullptr, &m_CBMaterial, 0, 0);
+		m_deviceContext->UpdateSubresource(m_CBCameraBuffer.Get(), 0, nullptr, &m_CBCamera, 0, 0);
+		m_deviceContext->UpdateSubresource(m_CBTextureBuffer.Get(), 0, nullptr, &m_CBUseTextureMap, 0, 0);
 		//m_deviceContext->DrawIndexed(m_indices.size(), 0, 0);
-	}
 
-	for(const auto& model : m_models)
-	{
-		//model->Render(m_deviceContext);
-
-		for (size_t i = 0; i < model->GetMeshes().size(); i++)
+		for (const auto& model : m_models)
 		{
-			size_t mi = model->GetMeshes()[i]->GetMaterialIndex();
-
-			m_deviceContext->PSSetShaderResources(0, 1, model->GetMaterials()[mi]->GetDiffuseRV().GetAddressOf());
-			m_deviceContext->PSSetShaderResources(1, 1, model->GetMaterials()[mi]->GetNormalRV().GetAddressOf());
-			m_deviceContext->PSSetShaderResources(2, 1, model->GetMaterials()[mi]->GetSpecularRV().GetAddressOf());
-			m_deviceContext->PSSetShaderResources(3, 1, model->GetMaterials()[mi]->GetEmissiveRV().GetAddressOf());
-			m_deviceContext->PSSetShaderResources(4, 1, model->GetMaterials()[mi]->GetOpacityRV().GetAddressOf());
-
-			m_CBMaterial.useDiffuseMap = model->GetMaterials()[mi]->GetDiffuseRV() != nullptr ? true : false;
-			m_CBMaterial.useNormalMap = model->GetMaterials()[mi]->GetNormalRV() != nullptr ? true : false;
-			m_CBMaterial.useSpecularMap = model->GetMaterials()[mi]->GetSpecularRV() != nullptr ? true : false;
-			m_CBMaterial.useEmissiveMap = model->GetMaterials()[mi]->GetEmissiveRV() != nullptr ? true : false;
-			m_CBMaterial.useOpacityMap = model->GetMaterials()[mi]->GetOpacityRV() != nullptr ? true : false;
-
-			if (m_CBMaterial.useOpacityMap)
-			{
-				m_deviceContext->OMSetBlendState(m_blendState.Get(), nullptr, 0xffffffff);  // 알파블렌드 상태설정 , 다른옵션은 기본값
-				int a = 1;
-				a = 54;
-			}
-			else
-				m_deviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);		// 설정해제, 다른옵션은 기본값
-
-			m_deviceContext->UpdateSubresource(m_CBMaterialBuffer.Get(), 0, nullptr, &m_CBMaterial, 0, 0);
-			m_deviceContext->IASetIndexBuffer(model->GetMeshes()[i]->GetIndexBuffer().Get(), DXGI_FORMAT_R16_UINT, 0);
-			m_deviceContext->IASetVertexBuffers(
-				0, 1,
-				model->GetMeshes()[i]->GetVertexBuffer().GetAddressOf(),
-				model->GetMeshes()[i]->GetVertexBufferStride(),
-				model->GetMeshes()[i]->GetVertexBufferOffset()
-			);
-			m_deviceContext->DrawIndexed(model->GetMeshes()[i]->GetIndexCount(), 0, 0);
+			model.up
 		}
 	}
+
 
 	RenderImGUI();
 
@@ -309,5 +289,5 @@ void FBXTransformAnimation::CreateConstantBuffer()
 	CBMaterialDesc.CPUAccessFlags = 0;
 	// Material 상수 버퍼 생성
 	HRESULT hr;
-	HR_T(m_device->CreateBuffer(&CBMaterialDesc, nullptr, m_CBMaterialBuffer.GetAddressOf()));
+	HR_T(m_device->CreateBuffer(&CBMaterialDesc, nullptr, m_CBTextureBuffer.GetAddressOf()));
 }

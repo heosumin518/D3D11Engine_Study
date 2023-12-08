@@ -11,6 +11,17 @@ Model::~Model()
 	
 }
 
+void Model::Init(ComPtr<ID3D11Device> device, ComPtr<ID3D11Buffer> modelData)
+{
+	m_CBNodeData = modelData;
+	m_rootNode->Init(device, m_CBNodeData);
+}
+
+void Model::Update(ComPtr<ID3D11DeviceContext> deviceContext, float deltaTime)
+{
+	m_rootNode->Update(deviceContext, deltaTime);
+}
+
 //void Model::Update(float deltaTime)
 //{
 //

@@ -169,6 +169,18 @@ void GameProcessor::CreatePixelShader()
 	HR_T(m_device->CreatePixelShader(m_psBlob->GetBufferPointer(), m_psBlob->GetBufferSize(), nullptr, m_pixelShader.GetAddressOf()));
 }
 
+void GameProcessor::CreateRasterizeState()
+{
+	D3D11_RASTERIZER_DESC desc;
+	ZeroMemory(&desc, sizeof(desc));
+	desc.FillMode = D3D11_FILL_SOLID;
+	desc.CullMode = D3D11_CULL_BACK;
+	desc.FrontCounterClockwise = false;		// 정점이 시계방향으로 돌면서 삼각형을 그리면 정면이 앞부분으로 간다. true면 정면이 반대방향을 향한다.
+
+	HRESULT hr = m_device->CreateRasterizerState(&desc, m_rasterizerState.GetAddressOf());
+	assert(SUCCEEDED(hr));
+}
+
 void GameProcessor::CreateSamplerState()
 {
 	D3D11_SAMPLER_DESC desc;

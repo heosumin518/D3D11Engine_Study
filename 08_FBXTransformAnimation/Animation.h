@@ -1,6 +1,6 @@
 #pragma once
 
-struct AnimationKey
+struct KeyFrameData
 {
 	float time;
 	Vector3 scale;
@@ -10,8 +10,12 @@ struct AnimationKey
 
 struct NodeAnimation
 {
-	aiString name;
-	vector<AnimationKey> animationKeys;
+	string name;
+	uint32 frameCount;
+	float frameRate;
+	float duration;
+
+	vector<KeyFrameData> keyFrame;
 
 	void Update(float deltaTime);
 	void Evaluate(float progressTime, Vector3& position, Quaternion& rotation, Vector3& scaling);

@@ -28,7 +28,7 @@ shared_ptr<Model> ModelLoader::LoadModelFile(const string& file)
 	);
 	assert(m_scene != nullptr);
 
-	ReadModel(m_scene->mRootNode);
+	CreateNode(m_scene->mRootNode);
 	CreateMaterial();
 
 	model->m_meshes = m_meshes;
@@ -39,14 +39,14 @@ shared_ptr<Model> ModelLoader::LoadModelFile(const string& file)
 	return model;
 }
 
-void ModelLoader::ReadModel(aiNode* node)
+void ModelLoader::CreateNode(aiNode* node)
 {
 	// Mesh
 	CreateMesh(node);
 
 	// Àç±Í ÇÔ¼ö
 	for (UINT i = 0; i < node->mNumChildren; i++)
-		ReadModel(node->mChildren[i]);
+		CreateNode(node->mChildren[i]);
 }
 
 void ModelLoader::CreateMesh(aiNode* node)
