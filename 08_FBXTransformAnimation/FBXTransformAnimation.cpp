@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "FBXTransformAnimation.h"
-#include "ModelLoader.h"
 
 FBXTransformAnimation::FBXTransformAnimation(const int32& width, const int32& height, const std::wstring& name)
 	: GameProcessor(width, height, name)
@@ -21,21 +20,16 @@ void FBXTransformAnimation::Initialize()
 	GameProcessor::CreateDepthStencilView();
 	GameProcessor::CreateBlendState();
 
-	GameProcessor::CreateVertexShader();
-	CreateInputLayout();
-	GameProcessor::CreatePixelShader();
-
-	GameProcessor::CreateSamplerState();
-
-	CreateConstantBuffer();
-
-	// fbx 파일 로드하여 모델 생성
-	ModelLoader loader(m_device);
-	m_models.push_back(loader.LoadModelFile("../Resources/BoxHuman.fbx"));
-	//m_models.push_back(loader.LoadModelFile("../Resources/zeldaPosed001.fbx"));
-	//m_models.push_back(loader.LoadModelFile("../Resources/Character.fbx"));
-
 	GameProcessor::InitImGUI();
+
+	CreateInputLayout();
+	GameProcessor::CreateVertexShader();
+	GameProcessor::CreatePixelShader();
+	CreateConstantBuffer();
+	GameProcessor::CreateSamplerState();
+	InitMatrix();
+
+	m_model.ReadFile()
 }
 
 void FBXTransformAnimation::Update()
@@ -170,68 +164,6 @@ void FBXTransformAnimation::RenderImGUI()
 	ImGui::NewFrame();
 
 	{
-	//// camera control window
-	//{
-	//	ImGui::SetNextWindowPos(ImVec2(420, 10));
-	//	ImGui::SetNextWindowSize(ImVec2(450, 150));		// 메뉴 창 크기 설정
-	//	ImGui::Begin("Camera Control Panel");
-
-	//	ImGui::Text("Adjust camera position");
-	//	ImGui::SliderFloat3("Camera (x, y, z)", reinterpret_cast<float*>(&m_cameraPos), -1000.0f, 1000.0f);
-	//	ImGui::SliderFloat("FOV", &m_cameraFOV, 0.01f, 180.0f);
-	//	ImGui::SliderFloat("Near", &m_cameraNear, 0.01f, 10.0f);
-	//	ImGui::SliderFloat("Far", &m_cameraFar, 1.f, 10500.0f);
-
-	//	ImGui::End();
-	//}
-
-	//// cube control window
-	//{
-	//	ImGui::SetNextWindowPos(ImVec2(10, 10));
-	//	ImGui::SetNextWindowSize(ImVec2(400, 150));		// 메뉴 창 크기 설정
-	//	ImGui::Begin("Cube Control Panel");
-
-	//	ImGui::Text("Rotate Cube");
-	//	ImGui::SliderFloat("X", &m_cubeRotateInfo.x, 0.f, 10.0f);
-	//	ImGui::SliderFloat("Y", &m_cubeRotateInfo.y, 0.f, 10.0f);
-	//	ImGui::SliderFloat("Z", &m_cubeRotateInfo.z, 0.f, 10.0f);
-	//	ImGui::SliderFloat("Scale", &m_modelScale, 0.f, 1000.0f);
-
-	//	ImGui::End();
-	//}
-
-	//// light control window
-	//{
-	//	ImGui::SetNextWindowPos(ImVec2(10, 170));
-	//	ImGui::SetNextWindowSize(ImVec2(400, 150));		// 메뉴 창 크기 설정
-	//	ImGui::Begin("Light Control Panel");
-
-	//	ImGui::SliderFloat3("Direction", reinterpret_cast<float*>(&m_CBLight.direction), -1.f, 1.f);
-	//	ImGui::ColorEdit4("Ambient", reinterpret_cast<float*>(&m_CBLight.ambient));
-	//	ImGui::ColorEdit4("Diffuse", reinterpret_cast<float*>(&m_CBLight.diffuse));
-	//	ImGui::ColorEdit4("Specular", reinterpret_cast<float*>(&m_CBLight.specular));
-
-	//	ImGui::End();
-	//}
-
-	//// material control window
-	//{
-	//	ImGui::SetNextWindowPos(ImVec2(1150, 10));
-	//	ImGui::SetNextWindowSize(ImVec2(400, 180));		// 메뉴 창 크기 설정
-	//	ImGui::Begin("Metarial Control Panel");
-
-	//	ImGui::Checkbox("UseNormalMap", &m_CBMaterial.useNormalMap);
-	//	ImGui::Checkbox("UseSpecularMap", &m_CBMaterial.useSpecularMap);
-	//	ImGui::ColorEdit4("Ambient", reinterpret_cast<float*>(&m_CBMaterial.ambient));
-	//	ImGui::ColorEdit4("Diffuse", reinterpret_cast<float*>(&m_CBMaterial.diffuse));
-	//	ImGui::ColorEdit4("Specular", reinterpret_cast<float*>(&m_CBMaterial.specular));
-	//	ImGui::SliderFloat("SpecularPower", &m_CBMaterial.specularPower, 0.f, 2000.f);
-
-	//	ImGui::End();
-	//}
-	}
-
-	{
 		ImGui::Begin("Properties");
 
 		ImGui::Text("Cube");
@@ -261,6 +193,19 @@ void FBXTransformAnimation::RenderImGUI()
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
 
+void FBXTransformAnimation::InitMatrix()
+{
+	m_world = Matrix::Identity;
+	m_eye = XMVectorSet(0.0f, 0.0f, -1000.0f, 0.0f);
+	m_at = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	m_up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	m_view = XMMatrixLookAtLH(m_eye, m_at, m_up);
+	m_projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, g_winSizeX / static_cast<FLOAT>(g_winSizeY), 1.0f, 10000.0f);
+
+	// FBX Loading
+
+}
+
 
 // Render() 에서 파이프라인에 바인딩할 InputLayout 생성 
 void FBXTransformAnimation::CreateInputLayout()
@@ -280,34 +225,33 @@ void FBXTransformAnimation::CreateInputLayout()
 
 void FBXTransformAnimation::CreateConstantBuffer()
 {
+	D3D11_BUFFER_DESC desc;
+
 	// Transform 상수 버퍼 정보 생성
-	D3D11_BUFFER_DESC CBTransformDesc;
-	ZeroMemory(&CBTransformDesc, sizeof(CBTransformDesc));
-	CBTransformDesc.Usage = D3D11_USAGE_DEFAULT;
-	CBTransformDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;	// 상수 버퍼 용도로 활용
-	CBTransformDesc.ByteWidth = sizeof(CB_Transform);
-	CBTransformDesc.CPUAccessFlags = 0;		// cpu 도 접근가능하게.
+	ZeroMemory(&desc, sizeof(desc));
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;	// 상수 버퍼 용도로 활용
+	desc.ByteWidth = sizeof(CB_Transform);
+	desc.CPUAccessFlags = 0;		// cpu 도 접근가능하게.
 	// Transform 상수 버퍼 생성
-	HR_T(m_device->CreateBuffer(&CBTransformDesc, nullptr, m_CBTransformBuffer.GetAddressOf()));
+	HR_T(m_device->CreateBuffer(&desc, nullptr, m_CBTransformBuffer.GetAddressOf()));
 
 	// Light 상수 버퍼 정보 생성
-	D3D11_BUFFER_DESC CBLightDesc;
-	ZeroMemory(&CBLightDesc, sizeof(CBLightDesc));
-	CBLightDesc.Usage = D3D11_USAGE_DEFAULT;
-	CBLightDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	CBLightDesc.ByteWidth = sizeof(CB_DirectionLight);
-	CBLightDesc.CPUAccessFlags = 0;
+	ZeroMemory(&desc, sizeof(desc));
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	desc.ByteWidth = sizeof(CB_DirectionLight);
+	desc.CPUAccessFlags = 0;
 	// Light 상수 버퍼 생성
-	HR_T(m_device->CreateBuffer(&CBLightDesc, nullptr, m_CBLightBuffer.GetAddressOf()));
+	HR_T(m_device->CreateBuffer(&desc, nullptr, m_CBLightBuffer.GetAddressOf()));
 
 	// Material 상수 버퍼 정보 생성
-	D3D11_BUFFER_DESC CBMaterialDesc;
-	ZeroMemory(&CBMaterialDesc, sizeof(CBMaterialDesc));
-	CBMaterialDesc.Usage = D3D11_USAGE_DEFAULT;
-	CBMaterialDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	CBMaterialDesc.ByteWidth = sizeof(CB_Material);
-	CBMaterialDesc.CPUAccessFlags = 0;
+	ZeroMemory(&desc, sizeof(desc));
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	desc.ByteWidth = sizeof(CB_Material);
+	desc.CPUAccessFlags = 0;
 	// Material 상수 버퍼 생성
 	HRESULT hr;
-	HR_T(m_device->CreateBuffer(&CBMaterialDesc, nullptr, m_CBMaterialBuffer.GetAddressOf()));
+	HR_T(m_device->CreateBuffer(&desc, nullptr, m_CBMaterialBuffer.GetAddressOf()));
 }

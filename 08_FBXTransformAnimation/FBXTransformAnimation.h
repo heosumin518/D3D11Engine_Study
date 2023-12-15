@@ -1,5 +1,6 @@
 #pragma once
 #include "GameProcessor.h"
+#include "Material.h"
 #include "Model.h"
 
 struct CB_Transform
@@ -14,39 +15,18 @@ static_assert((sizeof(CB_Transform) % 16) == 0,
 
 struct CB_DirectionLight
 {
-	Vector4 direction = { 0.f, 0.f, 1.0f, 1.0f };
+	Vector3 direction = { 0.5f, 0.0f, 0.8f };
+	float pad0 = 0.f;
 	Vector4 ambient = { 0.1f, 0.1f, 0.1f, 0.1f };
 	Vector4 diffuse = { 1.f, 1.f, 1.f, 1.f };
-	Vector4 specular = { 0.6f, 0.6f, 0.6f, 0.6f };
-	Vector3 eyePos;
-	float pad0;
+	Vector4 specular = { 1.f, 1.f, 1.f, 1.f };
+	Vector3 eyePos = {};
+	float pad1 = 0.f;
 };
 
 static_assert((sizeof(CB_DirectionLight) % 16) == 0,
 	"Constant Buffer size must be 16-byte aligned");
 
-struct CB_Material
-{
-	Vector4 ambient = { 1.0f, 1.0f, 1.0f, 1.0f };
-	Vector4 diffuse = { 1.0f, 1.0f, 1.0f, 1.0f };
-	Vector4 specular = { 1.0f, 1.0f, 1.0f, 1.0f };
-	Vector4 emissive = { 1.0f, 1.0f, 1.0f, 1.0f };
-	float specularPower = 80.f;
-	bool useDiffuseMap = true;
-	bool pad1[3];
-	bool useNormalMap = true;
-	bool pad2[3];
-	bool useSpecularMap = true;
-	bool pad3[3];
-	bool useEmissiveMap = true;
-	bool pad4[3];
-	bool useOpacityMap = true;
-	bool pad5[3];
-	Vector2 pad6;
-};
-
-static_assert((sizeof(CB_Material) % 16) == 0,
-	"Constant Buffer size must be 16-byte aligned");
 
 class FBXTransformAnimation :
 	public GameProcessor
@@ -64,6 +44,9 @@ public:
 
 	void RenderImGUI() override;
 
+public:
+	void InitMatrix();
+
 private:
 	Matrix m_world = Matrix::Identity;				// 월드좌표계 공간으로 변환을 위한 행렬.
 	Matrix m_view = Matrix::Identity;				// 뷰좌표계 공간으로 변환을 위한 행렬.
@@ -79,8 +62,8 @@ private:
 	CB_DirectionLight m_CBLight;
 	CB_Material m_CBMaterial;
 
-	// FBX
-	vector<shared_ptr<Model>> m_models;		// 가지고 있는 모델들
+	// FBX Model
+	Model m_model;
 
 
 	// ImGUI 로 조절할 camera 변수 목록
