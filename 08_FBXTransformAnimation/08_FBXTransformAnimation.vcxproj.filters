@@ -24,52 +24,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Model.cpp">
-      <Filter>Model</Filter>
-    </ClCompile>
-    <ClCompile Include="ModelLoader.cpp">
-      <Filter>Model</Filter>
-    </ClCompile>
     <ClCompile Include="FBXTransformAnimation.cpp">
       <Filter>Main</Filter>
     </ClCompile>
     <ClCompile Include="WinMain.cpp">
       <Filter>Main</Filter>
     </ClCompile>
-    <ClCompile Include="Material.cpp">
-      <Filter>Model\Material</Filter>
-    </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Model\Mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="Node.cpp">
-      <Filter>Model\Node</Filter>
-    </ClCompile>
-    <ClCompile Include="Animation.cpp">
-      <Filter>Model\Animation</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Model.h">
-      <Filter>Model</Filter>
-    </ClInclude>
     <ClInclude Include="FBXTransformAnimation.h">
       <Filter>Main</Filter>
-    </ClInclude>
-    <ClInclude Include="ModelLoader.h">
-      <Filter>Model</Filter>
-    </ClInclude>
-    <ClInclude Include="Material.h">
-      <Filter>Model\Material</Filter>
-    </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>Model\Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="Node.h">
-      <Filter>Model\Node</Filter>
-    </ClInclude>
-    <ClInclude Include="Animation.h">
-      <Filter>Model\Animation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
