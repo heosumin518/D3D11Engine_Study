@@ -11,6 +11,29 @@ Model::~Model()
 	
 }
 
+void Model::Init(ComPtr<ID3D11Buffer> modelBuffer, CB_UseTextureMap data, ComPtr<ID3D11Buffer> buffer, ComPtr<ID3D11BlendState> alphaBlendState)
+{
+	m_root->Init(modelBuffer);
+
+	for (auto& material : m_materials)
+		material->SetConstantBufferData(data, buffer, alphaBlendState);
+}
+
+void Model::Update(float deltaTime)
+{
+	if (m_animation != nullptr)
+	{
+		m_animationProressTime += deltaTime;
+	}
+	m_root->Update(deltaTime);
+}
+
+void Model::Render(ComPtr<ID3D11DeviceContext> deviceContext)
+{
+	m_root->Render(deviceContext);
+}
+
+
 //void Model::Update(float deltaTime)
 //{
 //
@@ -40,4 +63,3 @@ Model::~Model()
 //
 //	}
 //}
-

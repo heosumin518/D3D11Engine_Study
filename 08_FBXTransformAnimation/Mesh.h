@@ -9,11 +9,14 @@ struct Vertex
 	Vector3 tangent;
 };
 
+class Model;
 class Mesh
 {
 public:
 	Mesh();
 	~Mesh();
+
+	void Render(ComPtr<ID3D11DeviceContext> deviceContext);
 
 	void CreateVertexBuffer(ComPtr<ID3D11Device> device, vector<Vertex>& vertices);
 	void CreateIndexBuffer(ComPtr<ID3D11Device> device, vector<WORD>& indices);
@@ -27,6 +30,8 @@ public:
 	ComPtr<ID3D11Buffer> GetIndexBuffer() { return m_indexBuffer; }
 	ComPtr<ID3D11Buffer> GetVertexBuffer() { return m_vertexBuffer; }
 
+	void SetMaterial(shared_ptr<Material> material) { m_material = material; }
+
 private:
 	friend ModelLoader;
 	friend Model;
@@ -34,7 +39,11 @@ private:
 	ComPtr<ID3D11Buffer> m_vertexBuffer;
 	ComPtr<ID3D11Buffer> m_indexBuffer;
 
+	shared_ptr<Model> m_owner;		// 메쉬마다 모델을 부모로 가지고 있도록 하여 머터리얼 정보를 가져와 머터리얼을 Render 한다.
+
 	string m_name;
+
+	shared_ptr<Material> m_material;
 
 	UINT m_vertexCount = 0;
 	UINT m_vertexBufferStride = 0;	// 버텍스 하나의 크기

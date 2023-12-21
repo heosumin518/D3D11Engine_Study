@@ -18,8 +18,8 @@ public:
 	shared_ptr<Model> LoadModelFile(const string& file);
 	void ReadAnimationData(aiAnimation* animation);
 	shared_ptr<NodeAnimation> ParseAnimationNode(shared_ptr<Animation> animation, aiNodeAnim* srcNode);
-	void ReadModel(aiNode* node, int32 index, int32 parentIndex);
-	void CreateMesh(aiNode* node);
+	void ReadModel(aiNode* srcNode, int32 index, int32 parentIndex, shared_ptr<Model> owner);
+	shared_ptr<Mesh> CreateMesh(aiNode* node, shared_ptr<Model> owner);
 	void CreateMaterial();
 
 private:
@@ -30,9 +30,10 @@ private:
 	const aiScene* m_scene = nullptr;
 
 private:
-	vector<shared_ptr<Node>> m_bones;
+	shared_ptr<Node> m_root;
+	vector<shared_ptr<Node>> m_nodes;
 	vector<shared_ptr<Mesh>> m_meshes;
 	vector<shared_ptr<Material>> m_materials;
-	vector<shared_ptr<Animation>> m_animations;
+	shared_ptr<Animation> m_animation;
 };
 

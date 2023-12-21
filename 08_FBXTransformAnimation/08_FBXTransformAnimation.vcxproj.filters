@@ -71,6 +71,7 @@
     <ClInclude Include="Animation.h">
       <Filter>Model\Animation</Filter>
     </ClInclude>
+    <ClInclude Include="Struct.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="PixelShader.hlsl">

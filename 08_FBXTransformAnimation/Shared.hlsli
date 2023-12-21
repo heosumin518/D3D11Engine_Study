@@ -1,61 +1,66 @@
 //--------------------------------------------------------------------------------------
 // Constant Buffer Variables
 //--------------------------------------------------------------------------------------
-Texture2D txDiffuse : register(t0);
-Texture2D txNormal : register(t1);
-Texture2D txSpecular : register(t2);
-Texture2D txEmissive : register(t3);
-Texture2D txOpacity : register(t4);
+Texture2D texture0 : register(t0);
+Texture2D normal0 : register(t1);
+Texture2D specular0 : register(t2);
+// emissive 추가하기
+Texture2D opacity0 : register(t3);
 
-SamplerState samLinear : register(s0);
+SamplerState sampler0 : register(s0);
 
-cbuffer Transform : register(b0)
+// 좌표 변환 Constant Buffer
+cbuffer BufferData : register(b0)
 {
     matrix World;
     matrix View;
     matrix Projection;
 }
-
-cbuffer DirectionLight : register(b1)
+// Direction Light Constant Buffer
+cbuffer LightData : register(b1)
 {
-    float4 LightDirection;
-    float4 LightAmbient;
-    float4 LightDiffuse;
-    float4 LightSpecular;
-    float3 EyePosition;
-    float DirectionLightPad1;
+    float4 LightDir;
+    float4 LightColor;
+    float SpecularPower;
+    float3 AmbientColor;
 }
-
-cbuffer Material : register(b2)
+// Camera Constant Buffer
+cbuffer Camera : register(b2)
 {
-    float4 MaterialAmbient;
-    float4 MaterialDiffuse;
-    float4 MaterialSpecular;
-    float4 MaterialEmissive;
-    float MaterialSpecularPower;
-    bool UseDiffuseMap;
+    float4 CameraPos;
+}
+cbuffer NormalMap : register(b3)
+{
     bool UseNormalMap;
     bool UseSpecularMap;
-    bool UseEmissiveMap;
-    bool UseOpacityMap;
-    float2 MaterialPad0;
+    bool UseGammaCorrection;
+}
+cbuffer MeshData : register(b4)
+{
+    matrix meshWorld;
 }
 
 
-//--------------------------------------------------------------------------------------
+// Vertex Shader(VS) 입력
 struct VS_INPUT
 {
-    float4 PositionModel : POSITION;
-    float2 TexCoord : TEXCOORD0;
-    float3 NormalModel : NORMAL;
-    float3 TangentModel : TANGENT;
+    float4 mPosition : POSITION;
+    float2 mUV : TEXCOORD;
+    float3 mNormal : NORMAL0;
+    float3 mTangent : NORMAL1;
+    float3 mBiTangent : NORMAL2;
 };
 
-struct PS_INPUT
+// Vertex Shader(VS) 출력
+// SV_POSITION의 SV는 SystemValue의 약자이다.
+// HLSL상에서 이미 예약되어 있는 이름이고 렌더링 파이프라인 상에서의 의미가 정해져있다.
+struct VS_OUTPUT
 {
-    float4 PositionProj : SV_POSITION;
-    float3 PositionWorld : POSITION;
-    float2 TexCoord : TEXCOORD0;
-    float3 NormalWorld : NORMAL;
-    float3 TangentWorld : TANGENT;
+    float4 mPosition : SV_POSITION;
+    float2 mUV : TEXCOORD1;
+    float3 mViewDir : TEXCOORD2;
+    float4 mDiffuse : COLOR;
+    float3 mNormal : NORMAL0;
+    float3 mTangent : NORMAL1;
+    float3 mBiTangent : NORMAL2;
 };

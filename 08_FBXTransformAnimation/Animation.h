@@ -10,10 +10,14 @@ struct AnimationKey
 
 struct NodeAnimation
 {
-	aiString name;
+	string name;
+	uint32 frameCount;
+	float frameRate;
+	float duration;
 	vector<AnimationKey> animationKeys;
 
-	void Update(float deltaTime);
+	uint32 frameIndex = 0;
+
 	void Evaluate(float progressTime, Vector3& position, Quaternion& rotation, Vector3& scaling);
 };
 
@@ -24,7 +28,5 @@ struct Animation
 	float frameRate;
 	float duration;
 	vector<shared_ptr<NodeAnimation>> nodeAnimations;
-
-	void Update(float deltaTime);
 };
 

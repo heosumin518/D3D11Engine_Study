@@ -7,6 +7,11 @@ public:
 	Material();
 	virtual ~Material();
 
+	void Render(ComPtr<ID3D11DeviceContext> deviceContext);
+
+public:
+	void SetConstantBufferData(CB_UseTextureMap data, ComPtr<ID3D11Buffer> buffer, ComPtr<ID3D11BlendState> alphaBlendState) { m_CBUseTextureMap = data; m_CBUseTextureMapBuffer = buffer; m_alphaBlendState = alphaBlendState; }
+
 public:
 	ComPtr<ID3D11ShaderResourceView> GetDiffuseRV() { return m_diffuseRV; }
 	ComPtr<ID3D11ShaderResourceView> GetNormalRV() { return m_normalRV; }
@@ -19,6 +24,11 @@ private:
 	friend Model;
 
 	string name;
+
+	CB_UseTextureMap m_CBUseTextureMap;
+	ComPtr<ID3D11Buffer> m_CBUseTextureMapBuffer;
+
+	ComPtr<ID3D11BlendState> m_alphaBlendState;
 
 	// Shader Resource View
 	ComPtr<ID3D11ShaderResourceView> m_diffuseRV = nullptr;		// diffuse ¸®¼Ò½º ºä
