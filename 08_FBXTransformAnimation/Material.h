@@ -1,6 +1,11 @@
 #pragma once
 #include "ModelLoader.h"
 
+enum TextureType
+{
+	Diffuse, Normal, Specular, Emissive, Opacity, End,
+};
+
 class Material
 {
 public:
@@ -23,8 +28,6 @@ private:
 	friend ModelLoader;
 	friend Model;
 
-	string name;
-
 	CB_UseTextureMap m_CBUseTextureMap;
 	ComPtr<ID3D11Buffer> m_CBUseTextureMapBuffer;
 
@@ -35,6 +38,10 @@ private:
 	ComPtr<ID3D11ShaderResourceView> m_normalRV = nullptr;		// normal ∏Æº“Ω∫ ∫‰
 	ComPtr<ID3D11ShaderResourceView> m_specularRV = nullptr;	// specular ∏Æº“Ω∫ ∫‰
 	ComPtr<ID3D11ShaderResourceView> m_emissiveRV = nullptr;	// ¿ÃπÃΩ√∫Í∏  ∏Æº“Ω∫ ∫‰.	
-	ComPtr<ID3D11ShaderResourceView> m_opacityRV = nullptr;		// ≈ı∏Ì∏  ∏Æº“Ω∫ ∫‰.	
+	ComPtr<ID3D11ShaderResourceView> m_opacityRV = nullptr;		// ≈ı∏Ì∏  ∏Æº“Ω∫ ∫‰.
+
+	// now use 23/12/22
+	string name;
+	ComPtr<ID3D11ShaderResourceView> m_textures[TextureType::End];
 };
 

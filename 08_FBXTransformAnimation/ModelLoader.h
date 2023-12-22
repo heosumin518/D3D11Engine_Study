@@ -16,10 +16,10 @@ public:
 	~ModelLoader();
 public:
 	shared_ptr<Model> LoadModelFile(const string& file);
-	void ReadAnimationData(aiAnimation* animation);
+	void ReadAnimationData(aiAnimation* animation, shared_ptr<Model> owner);
 	shared_ptr<NodeAnimation> ParseAnimationNode(shared_ptr<Animation> animation, aiNodeAnim* srcNode);
-	void ReadModel(aiNode* srcNode, int32 index, int32 parentIndex, shared_ptr<Model> owner);
-	shared_ptr<Mesh> CreateMesh(aiNode* node, shared_ptr<Model> owner);
+	shared_ptr<Node> CreateNode(aiNode* srcNode, shared_ptr<Node> parent, shared_ptr<Model> owner);
+	void CreateMesh(aiNode* srcNode, shared_ptr<Node> node, shared_ptr<Model> owner);
 	void CreateMaterial();
 
 private:
@@ -34,6 +34,6 @@ private:
 	vector<shared_ptr<Node>> m_nodes;
 	vector<shared_ptr<Mesh>> m_meshes;
 	vector<shared_ptr<Material>> m_materials;
-	shared_ptr<Animation> m_animation;
+	vector<shared_ptr<Animation>> m_animations;
 };
 

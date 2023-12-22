@@ -13,7 +13,7 @@ public:
 	~ModelLoader();
 public:
 	shared_ptr<Model> LoadModelFile(const string& file);
-	void ReadModel(aiNode* node);
+	void CreateNode(aiNode* node);
 	void CreateMesh(aiNode* node);
 	void CreateMaterial();
 

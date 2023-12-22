@@ -26,57 +26,77 @@ shared_ptr<Model> ModelLoader::LoadModelFile(const string& file)
 		aiProcess_Triangulate | // vertex 삼각형 으로 출력
 		aiProcess_GenUVCoords |	// 텍스처 좌표 생성
 		aiProcess_GenNormals |	// Normal 정보 생성
-		aiProcess_CalcTangentSpace // 탄젠트 벡터 생성
+		aiProcess_CalcTangentSpace | // 탄젠트 벡터 생성
+		aiProcess_FlipWindingOrder
 	);
 	assert(m_scene != nullptr);
 
-	CreateMaterial();
-	ReadModel(m_scene->mRootNode, -1, -1, model);
+	if (m_scene->mMaterials != nullptr)
+		CreateMaterial();
+
+	m_root = CreateNode(m_scene->mRootNode, nullptr, model);
 
 	if (m_scene->mAnimations != nullptr)
-		ReadAnimationData(m_scene->mAnimations[0]);
+		ReadAnimationData(m_scene->mAnimations[0], model);
 
 	model->m_root = m_root;
 	model->m_nodes = m_nodes;
 	model->m_meshes = m_meshes;
 	model->m_materials = m_materials;
-	model->m_animation = m_animation;
+	model->m_animations = m_animations;
+
+	// TODO : 벡터 비워주고 다시 모델 로드할땐 사이즈 리사이즈
+	m_root = nullptr;
+	m_nodes.clear();
+	m_meshes.clear();
+	m_materials.clear();
+	m_animations.clear();
 
 	m_importer->FreeScene();
 
 	return model;
 }
 
-void ModelLoader::ReadAnimationData(aiAnimation* srcAnimation)
+void ModelLoader::ReadAnimationData(aiAnimation* srcAnimation, shared_ptr<Model> owner)
 {
 	if (!m_scene->HasAnimations())
 		return;
 
 	shared_ptr<Animation> animation = make_shared<Animation>();
-	animation->name = srcAnimation->mName.C_Str();
-	animation->frameRate = (float)srcAnimation->mTicksPerSecond;
-	animation->frameCount = (uint32)srcAnimation->mDuration + 1;
+	animation->m_name = srcAnimation->mName.C_Str();
 
-	for (uint32 i = 0; i < srcAnimation->mNumChannels; i++)
+	for (UINT c = 0; c < srcAnimation->mNumChannels; c++)
 	{
-		aiNodeAnim* srcNode = srcAnimation->mChannels[i];
+		aiNodeAnim* srcNodeAnim = srcAnimation->mChannels[c];
 
-		// 애니메이션 노드 데이터 파싱
-		shared_ptr<NodeAnimation> node = ParseAnimationNode(animation, srcNode);
-		animation->nodeAnimations.push_back(node);
-
-		// 이름이 맞는 노드를 찾아서 해당 노드에 애니메이션 등록
-		for (UINT i = 0; i < m_nodes.size(); i++)
+		for (UINT p = 0; p < srcNodeAnim->mNumPositionKeys; p++)
 		{
-			if (m_nodes[i]->GetName() == node->name)
-				m_nodes[i]->SetNodeAnimation(node);
+			AnimationKey key;
+
+			aiVectorKey& position = srcNodeAnim->mPositionKeys[p];
+			aiQuatKey& rotation = srcNodeAnim->mRotationKeys[p];
+			aiVectorKey& scale = srcNodeAnim->mScalingKeys[p];
+
+			assert(position.mTime == rotation.mTime);
+			assert(rotation.mTime == scale.mTime);
+
+			key.time = position.mTime;
+			key.position = Vector3(position.mValue.x, position.mValue.y, position.mValue.z);
+			key.rotation = Quaternion(rotation.mValue.x, rotation.mValue.y, rotation.mValue.z, rotation.mValue.w);
+			key.scale = Vector3(scale.mValue.x, scale.mValue.y, scale.mValue.z);
+
+			animation->m_animationKeys.push_back(key);
 		}
 
-		// 현재 찾은 노드 중에 제일 긴 시간으로 애니메이션 시간 갱신
-		animation->duration = max(animation->duration, node->animationKeys.back().time);
+		// 애니메이션에 노드 연결
+		for (const auto& node : owner->m_nodes)
+		{
+			if (node->m_name == srcNodeAnim->mNodeName.C_Str())
+				animation->m_node = node;
+		}
 	}
 
-	m_animation = animation;
+	m_animations.push_back(animation);
 }
 
 shared_ptr<NodeAnimation> ModelLoader::ParseAnimationNode(shared_ptr<Animation> animation, aiNodeAnim* srcNode)
@@ -147,43 +167,41 @@ shared_ptr<NodeAnimation> ModelLoader::ParseAnimationNode(shared_ptr<Animation> 
 	return node;
 }
 
-void ModelLoader::ReadModel(aiNode* srcNode, int32 index, int32 parentIndex, shared_ptr<Model> owner)
+shared_ptr<Node> ModelLoader::CreateNode(aiNode* srcNode, shared_ptr<Node> parent, shared_ptr<Model> owner)
 {
 	shared_ptr<Node> node = make_shared<Node>();
-	node->m_index = index;
-	node->m_parentIndex = parentIndex;
 	node->m_name = srcNode->mName.C_Str();
+	node->m_parent = parent;
+	node->m_owner = owner;
 
 	// Relative Transform
 	Matrix transform(srcNode->mTransformation[0]);
 	node->m_matLocal = transform.Transpose();	// d3d는 열 우선(column-major), 
 												// Assimp의 행렬은 행 우선(row-major) 행렬이기에 전치한다.
+	// 메쉬 생성 및 노드에 연결
+	CreateMesh(srcNode, node, owner);
 
-	if (parentIndex >= 0)
-		node->SetParentNode(m_nodes[parentIndex]);
-	else
-		m_root = node;
+	// 재귀
+	for (UINT i = 0; i < srcNode->mNumChildren; i++)
+		node->m_children.push_back(CreateNode(srcNode->mChildren[i], node, owner));
 
-	node->SetMesh(CreateMesh(srcNode, owner));
 	m_nodes.push_back(node);
 
-	// 재귀 함수
-	for (UINT i = 0; i < srcNode->mNumChildren; i++)
-		ReadModel(srcNode->mChildren[i], m_nodes.size(), index, owner);
+	return node;
 }
 
-shared_ptr<Mesh> ModelLoader::CreateMesh(aiNode* node, shared_ptr<Model> owner)
+void ModelLoader::CreateMesh(aiNode* srcNode, shared_ptr<Node> node, shared_ptr<Model> owner)
 {
-	if (node->mNumMeshes < 1)
+	if (srcNode->mNumMeshes < 1)
 		return nullptr;
 
 	shared_ptr<Mesh> mesh = make_shared<Mesh>();
-	mesh->m_name = node->mName.C_Str();
+	mesh->m_name = srcNode->mName.C_Str();
 	mesh->m_owner = owner;
 
-	for (UINT i = 0; i < node->mNumMeshes; i++)
+	for (UINT i = 0; i < srcNode->mNumMeshes; i++)
 	{
-		UINT index = node->mMeshes[i];
+		UINT index = srcNode->mMeshes[i];
 		const aiMesh* srcMesh = m_scene->mMeshes[index];
 
 		mesh->SetMaterial(m_materials[srcMesh->mMaterialIndex]);	// TODO : 메쉬에 머터리얼 연결
@@ -237,17 +255,16 @@ shared_ptr<Mesh> ModelLoader::CreateMesh(aiNode* node, shared_ptr<Model> owner)
 		//mesh->CreateIndexBuffer(m_device, indices);
 
 		//mesh->m_materialIndex = srcMesh->mMaterialIndex;
+
+		node->m_meshs.push_back(mesh);
 	}
 
 	m_meshes.push_back(mesh);
-
-	return mesh;
 }
 
 
 void ModelLoader::CreateMaterial()
 {
-
 	aiString texturePath;
 	wstring basePath = L"../Resources/";
 	filesystem::path path;
@@ -269,35 +286,35 @@ void ModelLoader::CreateMaterial()
 		{
 			path = ToWString(string(texturePath.C_Str()));
 			finalPath = basePath + path.filename().wstring();
-			HR_T(CreateTextureFromFile(m_device.Get(), finalPath.c_str(), material->m_diffuseRV.GetAddressOf()));
+			HR_T(CreateTextureFromFile(m_device.Get(), finalPath.c_str(), material->m_textures[Diffuse].GetAddressOf()));
 		}
 
 		if (AI_SUCCESS == srcMaterial->GetTexture(aiTextureType_NORMALS, 0, &texturePath))
 		{
 			path = ToWString(string(texturePath.C_Str()));
 			finalPath = basePath + path.filename().wstring();
-			HR_T(CreateTextureFromFile(m_device.Get(), finalPath.c_str(), material->m_normalRV.GetAddressOf()));
+			HR_T(CreateTextureFromFile(m_device.Get(), finalPath.c_str(), material->m_textures[Normal].GetAddressOf()));
 		}
 
 		if (AI_SUCCESS == srcMaterial->GetTexture(aiTextureType_SPECULAR, 0, &texturePath))
 		{
 			path = ToWString(string(texturePath.C_Str()));
 			finalPath = basePath + path.filename().wstring();
-			HR_T(CreateTextureFromFile(m_device.Get(), finalPath.c_str(), material->m_specularRV.GetAddressOf()));
+			HR_T(CreateTextureFromFile(m_device.Get(), finalPath.c_str(), material->m_textures[Specular].GetAddressOf()));
 		}
 
 		if (AI_SUCCESS == srcMaterial->GetTexture(aiTextureType_EMISSIVE, 0, &texturePath))
 		{
 			path = ToWString(string(texturePath.C_Str()));
 			finalPath = basePath + path.filename().wstring();
-			HR_T(CreateTextureFromFile(m_device.Get(), finalPath.c_str(), material->m_emissiveRV.GetAddressOf()));
+			HR_T(CreateTextureFromFile(m_device.Get(), finalPath.c_str(), material->m_textures[Emissive].GetAddressOf()));
 		}
 
 		if (AI_SUCCESS == srcMaterial->GetTexture(aiTextureType_OPACITY, 0, &texturePath))
 		{
 			path = ToWString(string(texturePath.C_Str()));
 			finalPath = basePath + path.filename().wstring();
-			HR_T(CreateTextureFromFile(m_device.Get(), finalPath.c_str(), material->m_opacityRV.GetAddressOf()));
+			HR_T(CreateTextureFromFile(m_device.Get(), finalPath.c_str(), material->m_textures[Opacity].GetAddressOf()));
 		}
 
 		m_materials.push_back(material);	

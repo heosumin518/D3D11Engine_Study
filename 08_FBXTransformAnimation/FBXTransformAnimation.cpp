@@ -25,65 +25,60 @@ void FBXTransformAnimation::Initialize()
 	CreateInputLayout();
 	GameProcessor::CreatePixelShader();
 
+	CreateConstantBuffer();
 	GameProcessor::CreateSamplerState();
 
-	CreateConstantBuffer();
+	GameProcessor::InitImGUI();
 
 	// fbx 파일 로드하여 모델 생성
 	ModelLoader loader(m_device);
-	m_models.push_back(loader.LoadModelFile("../Resources/GOSEGU.fbx"));
+	m_models.push_back(loader.LoadModelFile("../Resources/BoneDummyWithMaterial.fbx"));
+	//m_models.push_back(loader.LoadModelFile("../Resources/GOSEGU.fbx"));
 	//m_models.push_back(loader.LoadModelFile("../Resources/zeldaPosed001.fbx"));
 	//m_models.push_back(loader.LoadModelFile("../Resources/Character.fbx"));
 
-	for (auto& model : m_models)
-		model->Init(m_CBModelTransformBuffer, m_CBUseTextureMap, m_CBUseTextureMapBuffer, m_blendState);
+	m_camera.position = Vector3{ 0, 300, -500 };
+	m_camera.direction = Vector3{ 0, 0, 1 };
+	m_camera.headDir = Vector3{ 0, 1, 0 };
+	m_camera.fovY = XM_PIDIV2;
+	m_camera.farZ = 10000.f;
 
-	GameProcessor::InitImGUI();
+	m_cbLight.direction = Vector3{ 0.3f, 0.f, 0.6f };
+	m_cbLight.ambient = Vector4{ 0.1f, 0.1f, 0.1f, 1.f };
+	m_cbLight.diffuse = Vector4{ 1.0f,1.0f,1.0f,1.0f };
+	m_cbLight.specular = Vector4{ 1.0f,1.0f,1.0f,1.0f };
+
+	m_cbMaterial.ambient = Vector4{ 1.0f,1.0f,1.0f,1.0f };
+	m_cbMaterial.diffuse = Vector4{ 1.0f,1.0f,1.0f,1.0f };
+	m_cbMaterial.specular = Vector4{ 1.0f,1.0f,1.0f,1.0f };
+	m_cbMaterial.specularPower = 200.f;
+
 }
 
 void FBXTransformAnimation::Update()
 {
 	GameProcessor::Update();
 
-	auto t = m_timer.TotalTime();
+	auto deltaTime = m_timer.TotalTime();
 
-	// update camera
-	{
-		m_eye = XMVectorSet(m_cameraPos.x, m_cameraPos.y, m_cameraPos.z, 0.f);
-		m_at = XMVectorSet(m_cameraPos.x, m_cameraPos.y + 1.f, 100.f, 0.f);
-		m_up = XMVectorSet(0.f, 1.f, 0.f, 0.f);
+	if (m_camera.nearZ <= 0.0001f) { m_camera.nearZ = 0.0001f; }
+	if (m_camera.nearZ >= 9.9f) { m_camera.nearZ = 9.9f; }
+	if (m_camera.fovY <= 0.f) { m_camera.fovY = 0.01; }
 
-		m_view = XMMatrixLookAtLH(m_eye, m_at, m_up);		// ViewTransform 행렬 구하기. XMMatrixLookToLH() 함수로도 구할 수 있음
-		//m_projection = XMMatrixPerspectiveFovLH(m_cameraFOV / 180.0f * 3.14f, g_winSizeX / static_cast<FLOAT>(g_winSizeY), m_cameraNear, m_cameraFar);		// 0.01f, 100.0f 각각 near 와 far
-		m_projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, g_winSizeX / static_cast<FLOAT>(g_winSizeY), 1.0f, 10000.0f);		// 0.01f, 100.0f 각각 near 와 far
+	m_camera.matView = XMMatrixLookToLH(m_camera.position, m_camera.direction, m_camera.headDir);
+	m_camera.projMatrix = XMMatrixPerspectiveFovLH(m_camera.fovY, g_winSizeX / (FLOAT)g_winSizeY, m_camera.nearZ, m_camera.farZ);
 
-		m_CBCamera.Position = m_cameraPos;
-		m_CBCoordinate.View = XMMatrixTranspose(m_view);
-		m_CBCoordinate.Projection = XMMatrixTranspose(m_projection);
-	}
-
-	// update model
-	{
-		Matrix scale = Matrix::CreateScale(m_modelScale);
-		Matrix rotation = Matrix::CreateFromYawPitchRoll(Vector3(XMConvertToRadians(m_rotation.x), XMConvertToRadians(m_rotation.y), 0));
-		m_world = scale * rotation;
-		
-		for (auto& model : m_models)
-			model->SetWorldTransform(m_world);
-	}
-
-	// update light
-	{
-		//m_CBLight.eyePos = m_cameraPos;
-	}
+	m_cbLight.eyePos = m_camera.position;
 
 	for (auto& model : m_models)
-		model->Update(t);
+		model->Update(deltaTime);
 }
 
 void FBXTransformAnimation::Render()
 {
 	RenderBegin();
+
+	/// 231222 이제 렌더 고치기
 
 	// IA - VS - RS - PS - OM
 	{
@@ -232,8 +227,7 @@ void FBXTransformAnimation::CreateInputLayout()
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"NORMAL", 1, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"NORMAL", 2, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 	// AlignedByteOffset 값을 D3D11_APPEND_ALIGNED_ELEMENT 로 지정하면 버퍼에 데이터가 어떻게 배열되는지를 자동으로 알아내도록 할 수 있다.
 
@@ -245,48 +239,31 @@ void FBXTransformAnimation::CreateConstantBuffer()
 {
 	D3D11_BUFFER_DESC desc;
 
-	// Transform 상수 버퍼 정보 생성
 	ZeroMemory(&desc, sizeof(desc));
 	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;	// 상수 버퍼 용도로 활용
-	desc.ByteWidth = sizeof(CB_Coordinate);
-	desc.CPUAccessFlags = 0;		// cpu 도 접근가능하게.
-	// Transform 상수 버퍼 생성
-	HR_T(m_device->CreateBuffer(&desc, nullptr, m_CBCoordinateBuffer.GetAddressOf()));
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	desc.ByteWidth = sizeof(CB_Transform);
+	desc.CPUAccessFlags = 0;
+	HR_T(m_device->CreateBuffer(&desc, nullptr, m_pTransformBuffer.GetAddressOf()));
 
-	// Light 상수 버퍼 정보 생성
 	ZeroMemory(&desc, sizeof(desc));
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	desc.ByteWidth = sizeof(CB_Light);
 	desc.CPUAccessFlags = 0;
-	// Light 상수 버퍼 생성
-	HR_T(m_device->CreateBuffer(&desc, nullptr, m_CBLightBuffer.GetAddressOf()));
+	HR_T(m_device->CreateBuffer(&desc, nullptr, m_pLightBuffer.GetAddressOf()));
 
-	// Camera 상수 버퍼 정보 생성
 	ZeroMemory(&desc, sizeof(desc));
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	desc.ByteWidth = sizeof(CB_Camera);
+	desc.ByteWidth = sizeof(CB_Material);
 	desc.CPUAccessFlags = 0;
-	// Camera 상수 버퍼 생성
-	HR_T(m_device->CreateBuffer(&desc, nullptr, m_CBCameraBuffer.GetAddressOf()));
+	HR_T(m_device->CreateBuffer(&desc, nullptr, m_pMaterialBuffer.GetAddressOf()));
 
-	// ModelTransform 상수 버퍼 정보 생성
-	ZeroMemory(&desc, sizeof(desc));
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	desc.ByteWidth = sizeof(CB_ModelTransform);
-	desc.CPUAccessFlags = 0;
-	// ModelTransform 상수 버퍼 생성
-	HR_T(m_device->CreateBuffer(&desc, nullptr, m_CBModelTransformBuffer.GetAddressOf()));
-
-	// UseTextureMap 상수 버퍼 정보 생성
 	ZeroMemory(&desc, sizeof(desc));
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	desc.ByteWidth = sizeof(CB_UseTextureMap);
 	desc.CPUAccessFlags = 0;
-	// UseTextureMap 상수 버퍼 생성
-	HR_T(m_device->CreateBuffer(&desc, nullptr, m_CBUseTextureMapBuffer.GetAddressOf()));
+	HR_T(m_device->CreateBuffer(&desc, nullptr, m_pUseTextureMapBuffer.GetAddressOf()));
 }

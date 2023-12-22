@@ -31,30 +31,19 @@ private:
 	// FBX
 	vector<shared_ptr<Model>> m_models;		// 가지고 있는 모델들
 
-
-	// ImGUI 로 조절할 camera 변수 목록
-	Vector4 m_cameraPos = Vector4(0.0f, 300.0f, -1000.0f, 0.f);
-	float m_cameraFOV = 30.f;
-	float m_cameraNear = 0.01f;
-	float m_cameraFar = 500.0f;
-	Vector2 m_rotation = Vector2(0.0f, 0.0f);
-	float m_modelScale = 3.f;
-
-
 	/// new
-	CB_Coordinate m_CBCoordinate;
-	ComPtr<ID3D11Buffer> m_CBCoordinateBuffer;
+	CB_Transform m_cbTransform;
+	ComPtr<ID3D11Buffer> m_pTransformBuffer;
 
-	ComPtr<ID3D11Buffer> m_CBModelTransformBuffer;
+	CB_Light m_cbLight;
+	ComPtr<ID3D11Buffer> m_pLightBuffer;
 
-	CB_UseTextureMap m_CBUseTextureMap;
-	ComPtr<ID3D11Buffer> m_CBUseTextureMapBuffer;
+	CB_Material m_cbMaterial;
+	ComPtr<ID3D11Buffer> m_pMaterialBuffer;
 
-	CB_Camera m_CBCamera;
-	ComPtr<ID3D11Buffer> m_CBCameraBuffer;
+	CB_UseTextureMap m_cbUseTextureMap;
+	ComPtr<ID3D11Buffer> m_pUseTextureMapBuffer;
 
-	CB_Light m_CBLight;
-	ComPtr<ID3D11Buffer> m_CBLightBuffer = nullptr;
-
+	CameraInfo m_camera;
 };
 

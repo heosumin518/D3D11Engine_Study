@@ -2,31 +2,33 @@
 
 struct AnimationKey
 {
-	float time;
-	Vector3 scale;
-	Quaternion rotation;
-	Vector3 translation;
+	float time = 0.f;
+	Vector3 position = {};
+	Vector3 scale = { 1, 1, 1};
+	Quaternion rotation = {};
 };
 
-struct NodeAnimation
+class ModelLoader;
+class Model;
+class Node;
+class Animation
 {
-	string name;
-	uint32 frameCount;
-	float frameRate;
-	float duration;
-	vector<AnimationKey> animationKeys;
+public:
+	void Update(float deltaTime);
+	void Evaluate(Vector3& scale, Quaternion& rotation, Vector3& position);
 
-	uint32 frameIndex = 0;
+private:
+	friend ModelLoader;
 
-	void Evaluate(float progressTime, Vector3& position, Quaternion& rotation, Vector3& scaling);
-};
+	vector<AnimationKey> m_animationKeys;
+	shared_ptr<Node> m_node;
+	shared_ptr<Model> m_owner;
 
-struct Animation
-{
-	string name;
-	uint32 frameCount;
-	float frameRate;
-	float duration;
-	vector<shared_ptr<NodeAnimation>> nodeAnimations;
+	string m_name;
+	uint32 m_curKey = 0;
+	uint32 m_nextKey = 0;
+	float m_duration = 0.f;		// 애니메이션 경과 시간
+
+	static int fps;
 };
 

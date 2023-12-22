@@ -1,58 +1,69 @@
 #pragma once
 #include "pch.h"
 
-struct CB_ModelTransform
+struct CB_Transform
 {
-	Matrix World = Matrix::Identity;
+	Matrix world = Matrix::Identity;
+	Matrix view = Matrix::Identity;
+	Matrix projection = Matrix::Identity;
 };
 
-static_assert((sizeof(CB_ModelTransform) % 16) == 0,
+static_assert((sizeof(CB_Transform) % 16) == 0,
+	"Constant Buffer size must be 16-byte aligned");
+
+struct CB_Light
+{
+	Vector3 direction;
+	float pad0;
+	Vector4 ambient;
+	Vector4 diffuse;
+	Vector4 specular;
+	Vector3 eyePos;
+	float pad1;
+};
+
+static_assert((sizeof(CB_Light) % 16) == 0,
+	"Constant Buffer size must be 16-byte aligned");
+
+struct CB_Material
+{
+	Vector4 ambient;
+	Vector4 diffuse;
+	Vector4 specular;
+	float specularPower;
+	Vector3 pad0;
+};
+
+static_assert((sizeof(CB_Material) % 16) == 0,
 	"Constant Buffer size must be 16-byte aligned");
 
 struct CB_UseTextureMap
 {
-	bool UseDiffuseMap = false;
+	bool isUseDiffuseMap = false;
 	bool pad0[3];
-	bool UseNormalMap = false;
+	bool isUseNormalMap = false;
 	bool pad1[3];
-	bool UseSpecularMap = false;
+	bool isUseSpecularMap = false;
 	bool pad2[3];
-	bool UseEmissiveMap = false;
+	bool isUseEmissiveMap = false;
 	bool pad3[3];
-	bool UseOpacityMap = false;
+	bool isUseOpacityMap = false;
 	bool pad4[3];
-
 	Vector3 pad5;
 };
 
 static_assert((sizeof(CB_UseTextureMap) % 16) == 0,
 	"Constant Buffer size must be 16-byte aligned");
 
-struct CB_Camera
+struct CameraInfo
 {
-	Vector4 Position;
+	Vector3 position;
+	Vector3 direction;
+	Vector3 headDir;
+	Matrix matView;
+
+	float fovY;
+	float nearZ;
+	float farZ;
+	Matrix projMatrix;
 };
-
-static_assert((sizeof(CB_Camera) % 16) == 0,
-	"Constant Buffer size must be 16-byte aligned");
-
-struct CB_Coordinate
-{
-	Matrix World = Matrix::Identity;
-	Matrix View = Matrix::Identity;
-	Matrix Projection = Matrix::Identity;
-};
-
-static_assert((sizeof(CB_Coordinate) % 16) == 0,
-	"Constant Buffer size must be 16-byte aligned");
-
-struct CB_Light
-{
-	Vector4 Direction;
-	Vector4 LightColor;
-	float SpecularPower;
-	Vector3 AmbientColor;
-};
-
-static_assert((sizeof(CB_Light) % 16) == 0,
-	"Constant Buffer size must be 16-byte aligned");
