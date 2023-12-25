@@ -14,12 +14,19 @@ public:
 	~Model();
 
 public:
+	void Init(CB_Transform& nodeTransform, ComPtr<ID3D11Buffer> nodeBuffer,
+		CB_UseTextureMap& matTransform, ComPtr<ID3D11Buffer> matBuffer, ComPtr<ID3D11BlendState> blendState);
 	void Update(float deltaTime);
-	void Render(ComPtr<ID3D11DeviceContext> deviceContext);
+	void Render(ComPtr<ID3D11DeviceContext> deviceContext, CB_Transform& nodeTransform);
 
 public:
 	vector<shared_ptr<Mesh>> GetMeshes() { return m_meshes; }
 	vector<shared_ptr<Material>> GetMaterials() { return m_materials; }
+
+	Vector3& GetScale() { return m_scale; }
+	Vector3& GetPos() { return m_position; }
+	Vector3& GetRotation() { return m_rotation; }
+
 	Matrix GetTransform() { return m_transform; }
 private:
 	friend ModelLoader;

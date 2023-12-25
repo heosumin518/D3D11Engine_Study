@@ -1,5 +1,6 @@
 #pragma once
 #include "ModelLoader.h"
+#include "Struct.h"
 
 enum TextureType
 {
@@ -12,10 +13,8 @@ public:
 	Material();
 	virtual ~Material();
 
+	void Init(CB_UseTextureMap& cbUseTextureMap, ComPtr<ID3D11Buffer> matBuffer, ComPtr<ID3D11BlendState> blendState);
 	void Render(ComPtr<ID3D11DeviceContext> deviceContext);
-
-public:
-	void SetConstantBufferData(CB_UseTextureMap data, ComPtr<ID3D11Buffer> buffer, ComPtr<ID3D11BlendState> alphaBlendState) { m_CBUseTextureMap = data; m_CBUseTextureMapBuffer = buffer; m_alphaBlendState = alphaBlendState; }
 
 public:
 	ComPtr<ID3D11ShaderResourceView> GetDiffuseRV() { return m_diffuseRV; }
@@ -28,10 +27,6 @@ private:
 	friend ModelLoader;
 	friend Model;
 
-	CB_UseTextureMap m_CBUseTextureMap;
-	ComPtr<ID3D11Buffer> m_CBUseTextureMapBuffer;
-
-	ComPtr<ID3D11BlendState> m_alphaBlendState;
 
 	// Shader Resource View
 	ComPtr<ID3D11ShaderResourceView> m_diffuseRV = nullptr;		// diffuse ¸®¼Ò½º ºä
@@ -43,5 +38,10 @@ private:
 	// now use 23/12/22
 	string name;
 	ComPtr<ID3D11ShaderResourceView> m_textures[TextureType::End];
+
+	CB_UseTextureMap m_cbUseTextureMap;
+	ComPtr<ID3D11Buffer> m_pUseTextureMapBuffer;
+
+	ComPtr<ID3D11BlendState> m_alphaBlendState;
 };
 

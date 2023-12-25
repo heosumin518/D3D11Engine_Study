@@ -65,5 +65,8 @@ struct CameraInfo
 	float fovY;
 	float nearZ;
 	float farZ;
-	Matrix projMatrix;
+	Matrix matProjection;
 };
+
+static_assert((sizeof(CameraInfo) % 16) == 0,
+	"Constant Buffer size must be 16-byte aligned");

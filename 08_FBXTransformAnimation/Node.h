@@ -2,15 +2,17 @@
 #include "ModelLoader.h"
 #include "Struct.h"
 
-class Node : public enable_shared_from_this<Node>
+class Node
 {
 public:
 	Node();
 	~Node();
 
 public:
+	void Init(CB_Transform& nodeTransform, ComPtr<ID3D11Buffer> nodeBuffer,
+		CB_UseTextureMap& matTransform, ComPtr<ID3D11Buffer> matBuffer, ComPtr<ID3D11BlendState> blendState);
 	void Update();
-	void Render(ComPtr<ID3D11DeviceContext> deviceContext);
+	void Render(ComPtr<ID3D11DeviceContext> deviceContext, CB_Transform& nodeTransform);
 
 	void SetLocalTransform(Matrix local) { m_matLocal = local; }
 
@@ -25,8 +27,8 @@ private:
 	Matrix m_matWorld;
 	shared_ptr<Model> m_owner;
 
-	// hmm..
-	//CB_ModelTransform m_CBNodeTransform;
-	//ComPtr<ID3D11Buffer> m_nodeBuffer;	// TODO 231221 노드버퍼 정보를 넘겨주어야 함
+	// 메인에 있는 트랜스폼 버퍼 가져와서 값 변경
+	CB_Transform m_transform;
+	ComPtr<ID3D11Buffer> m_buffer;
 };
 

@@ -13,6 +13,19 @@ Node::~Node()
 {
 }
 
+void Node::Init(CB_Transform& nodeTransform, ComPtr<ID3D11Buffer> nodeBuffer,
+	CB_UseTextureMap& matTransform, ComPtr<ID3D11Buffer> matBuffer, ComPtr<ID3D11BlendState> blendState)
+{
+	m_transform = nodeTransform;
+	m_buffer = nodeBuffer;
+
+	for (auto& mesh : m_meshs)
+		mesh->Init(matTransform, matBuffer, blendState);
+
+	for (auto& child : m_children)
+		child->Init(nodeTransform, nodeBuffer, matTransform, matBuffer, blendState);
+}
+
 
 void Node::Update()
 {
@@ -34,10 +47,16 @@ void Node::Update()
 		child->Update();
 }
 
-void Node::Render(ComPtr<ID3D11DeviceContext> deviceContext)
+void Node::Render(ComPtr<ID3D11DeviceContext> deviceContext, CB_Transform& nodeTransform)
 {
+	nodeTransform.world = XMMatrixTranspose(m_matWorld);
+	deviceContext->VSSetConstantBuffers(0, 1, m_buffer.GetAddressOf());
+	deviceContext->PSSetConstantBuffers(0, 1, m_buffer.GetAddressOf());
+	deviceContext->UpdateSubresource(m_buffer.Get(), 0, nullptr, &nodeTransform, 0, 0);
 
+	for (auto& mesh : m_meshs)
+		mesh->Render(deviceContext);
 
 	for (auto& child : m_children)
-		child->Render(deviceContext);
+		child->Render(deviceContext, nodeTransform);
 }

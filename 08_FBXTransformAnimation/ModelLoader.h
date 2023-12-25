@@ -17,7 +17,6 @@ public:
 public:
 	shared_ptr<Model> LoadModelFile(const string& file);
 	void ReadAnimationData(aiAnimation* animation, shared_ptr<Model> owner);
-	shared_ptr<NodeAnimation> ParseAnimationNode(shared_ptr<Animation> animation, aiNodeAnim* srcNode);
 	shared_ptr<Node> CreateNode(aiNode* srcNode, shared_ptr<Node> parent, shared_ptr<Model> owner);
 	void CreateMesh(aiNode* srcNode, shared_ptr<Node> node, shared_ptr<Model> owner);
 	void CreateMaterial();

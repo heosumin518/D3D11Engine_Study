@@ -32,7 +32,7 @@ void FBXTransformAnimation::Initialize()
 
 	// fbx 파일 로드하여 모델 생성
 	ModelLoader loader(m_device);
-	m_models.push_back(loader.LoadModelFile("../Resources/BoneDummyWithMaterial.fbx"));
+	m_models.push_back(loader.LoadModelFile("../Resources/BoxHuman.fbx"));
 	//m_models.push_back(loader.LoadModelFile("../Resources/GOSEGU.fbx"));
 	//m_models.push_back(loader.LoadModelFile("../Resources/zeldaPosed001.fbx"));
 	//m_models.push_back(loader.LoadModelFile("../Resources/Character.fbx"));
@@ -53,6 +53,8 @@ void FBXTransformAnimation::Initialize()
 	m_cbMaterial.specular = Vector4{ 1.0f,1.0f,1.0f,1.0f };
 	m_cbMaterial.specularPower = 200.f;
 
+	// 일단 하나만.
+	m_models[0]->Init(m_cbTransform, m_pTransformBuffer, m_cbUseTextureMap, m_pUseTextureMapBuffer, m_blendState);
 }
 
 void FBXTransformAnimation::Update()
@@ -66,7 +68,7 @@ void FBXTransformAnimation::Update()
 	if (m_camera.fovY <= 0.f) { m_camera.fovY = 0.01; }
 
 	m_camera.matView = XMMatrixLookToLH(m_camera.position, m_camera.direction, m_camera.headDir);
-	m_camera.projMatrix = XMMatrixPerspectiveFovLH(m_camera.fovY, g_winSizeX / (FLOAT)g_winSizeY, m_camera.nearZ, m_camera.farZ);
+	m_camera.matProjection = XMMatrixPerspectiveFovLH(m_camera.fovY, g_winSizeX / (FLOAT)g_winSizeY, m_camera.nearZ, m_camera.farZ);
 
 	m_cbLight.eyePos = m_camera.position;
 
@@ -78,13 +80,11 @@ void FBXTransformAnimation::Render()
 {
 	RenderBegin();
 
-	/// 231222 이제 렌더 고치기
+	m_cbTransform.view = XMMatrixTranspose(m_camera.matView);
+	m_cbTransform.projection = XMMatrixTranspose(m_camera.matProjection);
 
 	// IA - VS - RS - PS - OM
 	{
-		uint32 stride = sizeof(Vertex);
-		uint32 offset = 0;
-
 		// IA
 		//m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.GetAddressOf(), &stride, &offset);
 		//m_deviceContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);	// INDEX값의 범위
@@ -93,30 +93,24 @@ void FBXTransformAnimation::Render()
 
 		// VS
 		m_deviceContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
-		m_deviceContext->VSSetConstantBuffers(0, 1, m_CBCoordinateBuffer.GetAddressOf());
-		m_deviceContext->VSSetConstantBuffers(1, 1, m_CBLightBuffer.GetAddressOf());
-		m_deviceContext->VSSetConstantBuffers(2, 1, m_CBCameraBuffer.GetAddressOf());
+		m_deviceContext->VSSetConstantBuffers(1, 1, m_pLightBuffer.GetAddressOf());
+		m_deviceContext->VSSetConstantBuffers(2, 1, m_pMaterialBuffer.GetAddressOf());
 
 		// RS
 
 		// PS
 		m_deviceContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
 		m_deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
-		m_deviceContext->PSSetConstantBuffers(0, 1, m_CBCoordinateBuffer.GetAddressOf());
-		m_deviceContext->PSSetConstantBuffers(1, 1, m_CBLightBuffer.GetAddressOf());
-		m_deviceContext->PSSetConstantBuffers(2, 1, m_CBCameraBuffer.GetAddressOf());
+		m_deviceContext->PSSetConstantBuffers(1, 1, m_pLightBuffer.GetAddressOf());
+		m_deviceContext->PSSetConstantBuffers(2, 1, m_pMaterialBuffer.GetAddressOf());
+
+		m_deviceContext->UpdateSubresource(m_pLightBuffer.Get(), 0, nullptr, &m_cbLight, 0, 0);
+		m_deviceContext->UpdateSubresource(m_pMaterialBuffer.Get(), 0, nullptr, &m_cbMaterial, 0, 0);
 
 		// OM
-		// Render cube and Light
-		m_deviceContext->UpdateSubresource(m_CBCoordinateBuffer.Get(), 0, nullptr, &m_CBCoordinate, 0, 0);
-		m_CBLight.Direction.Normalize();
-		m_deviceContext->UpdateSubresource(m_CBLightBuffer.Get(), 0, nullptr, &m_CBLight, 0, 0);
-		m_deviceContext->UpdateSubresource(m_CBCameraBuffer.Get(), 0, nullptr, &m_CBCamera, 0, 0);
-		//m_deviceContext->DrawIndexed(m_indices.size(), 0, 0);
+		for (auto& model : m_models)
+			model->Render(m_deviceContext, m_cbTransform);
 	}
-
-	for (auto& model : m_models)
-		model->Render(m_deviceContext);
 
 	RenderImGUI();
 
@@ -199,17 +193,26 @@ void FBXTransformAnimation::RenderImGUI()
 		ImGui::Begin("Properties");
 
 		ImGui::Text("Model");
-		ImGui::SliderFloat("Scale", (float*)&m_modelScale, 1, 100);
-		ImGui::SliderFloat2("Rotation", (float*)&m_rotation, -180, 180);
+		ImGui::SliderFloat("Scale", (float*)&m_models[0]->GetScale(), 1, 100);
+		ImGui::DragFloat3("##rotate", (float*)&m_models[0]->GetRotation(), 0.1f, -360.f, 360.f);
+		ImGui::SliderFloat2("Rotation", (float*)&m_models[0]->GetRotation(), -180, 180);
+		ImGui::SliderFloat3("Position", (float*)&m_models[0]->GetPos(), 1, 100);
 
 		ImGui::Text("Light");
-		ImGui::SliderFloat3("LightDirection", (float*)&m_CBLight.Direction, -1.0f, 1.0f);
-		ImGui::ColorEdit3("LightAmbient", (float*)&m_CBLight.AmbientColor);
-		ImGui::ColorEdit3("LightDiffuse", (float*)&m_CBLight.LightColor);
-		ImGui::ColorEdit3("LightSpecular", (float*)&m_CBLight.SpecularPower);
+		ImGui::SliderFloat3("LightDirection", (float*)&m_cbLight.direction, -1.0f, 1.0f);
+		ImGui::ColorEdit3("LightAmbient", (float*)&m_cbLight.ambient);
+		ImGui::ColorEdit3("LightDiffuse", (float*)&m_cbLight.diffuse);
+		ImGui::ColorEdit3("LightSpecular", (float*)&m_cbLight.specular);
+
+		ImGui::Text("Material");
+		ImGui::ColorEdit4("MaterialAmbient", (float*)&m_cbMaterial.ambient);
+		ImGui::ColorEdit4("MaterialDiffuse", (float*)&m_cbMaterial.diffuse);
+		ImGui::ColorEdit4("MaterialSpecular", (float*)&m_cbMaterial.specular);
+		//ImGui::ColorEdit4("MaterialEmissive", (float*)&m_cbMaterial.emissive);
+		ImGui::SliderFloat("MaterialSpecularPower", (float*)&m_cbMaterial.specularPower, 2.0f, 4096.0f);
 
 		ImGui::Text("Camera");
-		ImGui::SliderFloat3("Position", (float*)&m_cameraPos, -2000.0f, 2000.0f);
+		ImGui::SliderFloat3("Position", (float*)&m_camera.position, -2000.0f, 2000.0f);
 
 		ImGui::End();
 	}

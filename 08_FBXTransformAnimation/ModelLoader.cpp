@@ -34,15 +34,17 @@ shared_ptr<Model> ModelLoader::LoadModelFile(const string& file)
 	if (m_scene->mMaterials != nullptr)
 		CreateMaterial();
 
-	m_root = CreateNode(m_scene->mRootNode, nullptr, model);
+	model->m_materials = m_materials;
 
-	if (m_scene->mAnimations != nullptr)
-		ReadAnimationData(m_scene->mAnimations[0], model);
+	m_root = CreateNode(m_scene->mRootNode, nullptr, model);
 
 	model->m_root = m_root;
 	model->m_nodes = m_nodes;
 	model->m_meshes = m_meshes;
-	model->m_materials = m_materials;
+
+	if (m_scene->mAnimations != nullptr)
+		ReadAnimationData(m_scene->mAnimations[0], model);
+
 	model->m_animations = m_animations;
 
 	// TODO : 벡터 비워주고 다시 모델 로드할땐 사이즈 리사이즈
@@ -99,74 +101,6 @@ void ModelLoader::ReadAnimationData(aiAnimation* srcAnimation, shared_ptr<Model>
 	m_animations.push_back(animation);
 }
 
-shared_ptr<NodeAnimation> ModelLoader::ParseAnimationNode(shared_ptr<Animation> animation, aiNodeAnim* srcNode)
-{
-	shared_ptr<NodeAnimation> node = make_shared<NodeAnimation>();
-	node->name = srcNode->mNodeName.C_Str();
-	node->duration = animation->duration;
-	node->frameCount = animation->frameCount;
-	node->frameRate = animation->frameRate;
-
-	uint32 keyCount = max(max(srcNode->mNumPositionKeys, srcNode->mNumScalingKeys), srcNode->mNumRotationKeys);
-
-	for (uint32 k = 0; k < keyCount; k++)
-	{
-		AnimationKey frameData;
-
-		bool found = false;
-		uint32 t = node->animationKeys.size();
-
-		// Position
-		if (::fabsf((float)srcNode->mPositionKeys[k].mTime - (float)t) <= 0.0001f)
-		{
-			aiVectorKey key = srcNode->mPositionKeys[k];
-			frameData.time = (float)key.mTime;
-			::memcpy_s(&frameData.translation, sizeof(Vector3), &key.mValue, sizeof(aiVector3D));
-
-			found = true;
-		}
-
-		// Roatation
-		if (::fabsf((float)srcNode->mRotationKeys[k].mTime - (float)t) <= 0.0001f)
-		{
-			aiQuatKey key = srcNode->mRotationKeys[k];
-			frameData.time = (float)key.mTime;
-
-			frameData.rotation.x = key.mValue.x;
-			frameData.rotation.y = key.mValue.y;
-			frameData.rotation.z = key.mValue.z;
-			frameData.rotation.w = key.mValue.w;
-
-			found = true;
-		}
-
-		// Scale
-		if (::fabsf((float)srcNode->mScalingKeys[k].mTime - (float)t) <= 0.0001f)
-		{
-			aiVectorKey key = srcNode->mScalingKeys[k];
-			frameData.time = (float)key.mTime;
-			::memcpy_s(&frameData.scale, sizeof(Vector3), &key.mValue, sizeof(aiVector3D));
-
-			found = true;
-		}
-
-		if (found == true)
-			node->animationKeys.push_back(frameData);
-	}
-
-	// Keyframe 늘려주기
-	if (node->animationKeys.size() < animation->frameCount)
-	{
-		uint32 count = animation->frameCount - node->animationKeys.size();
-		AnimationKey keyFrame = node->animationKeys.back();
-
-		for (uint32 n = 0; n < count; n++)
-			node->animationKeys.push_back(keyFrame);
-	}
-
-	return node;
-}
-
 shared_ptr<Node> ModelLoader::CreateNode(aiNode* srcNode, shared_ptr<Node> parent, shared_ptr<Model> owner)
 {
 	shared_ptr<Node> node = make_shared<Node>();
@@ -181,11 +115,11 @@ shared_ptr<Node> ModelLoader::CreateNode(aiNode* srcNode, shared_ptr<Node> paren
 	// 메쉬 생성 및 노드에 연결
 	CreateMesh(srcNode, node, owner);
 
+	m_nodes.push_back(node);
+
 	// 재귀
 	for (UINT i = 0; i < srcNode->mNumChildren; i++)
 		node->m_children.push_back(CreateNode(srcNode->mChildren[i], node, owner));
-
-	m_nodes.push_back(node);
 
 	return node;
 }
@@ -193,7 +127,7 @@ shared_ptr<Node> ModelLoader::CreateNode(aiNode* srcNode, shared_ptr<Node> paren
 void ModelLoader::CreateMesh(aiNode* srcNode, shared_ptr<Node> node, shared_ptr<Model> owner)
 {
 	if (srcNode->mNumMeshes < 1)
-		return nullptr;
+		return;
 
 	shared_ptr<Mesh> mesh = make_shared<Mesh>();
 	mesh->m_name = srcNode->mName.C_Str();
@@ -256,9 +190,9 @@ void ModelLoader::CreateMesh(aiNode* srcNode, shared_ptr<Node> node, shared_ptr<
 
 		//mesh->m_materialIndex = srcMesh->mMaterialIndex;
 
-		node->m_meshs.push_back(mesh);
 	}
 
+	node->m_meshs.push_back(mesh);
 	m_meshes.push_back(mesh);
 }
 

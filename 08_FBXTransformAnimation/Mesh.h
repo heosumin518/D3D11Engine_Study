@@ -1,5 +1,6 @@
 #pragma once
 #include "ModelLoader.h"
+#include "Struct.h"
 
 struct Vertex
 {
@@ -16,6 +17,7 @@ public:
 	Mesh();
 	~Mesh();
 
+	void Init(CB_UseTextureMap& transform, ComPtr<ID3D11Buffer> buffer, ComPtr<ID3D11BlendState> blendState);
 	void Render(ComPtr<ID3D11DeviceContext> deviceContext);
 
 	void CreateVertexBuffer(ComPtr<ID3D11Device> device, vector<Vertex>& vertices);

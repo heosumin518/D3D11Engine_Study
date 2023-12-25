@@ -1,25 +1,61 @@
 #include "Shared.hlsli"
 
-//--------------------------------------------------------------------------------------
-// Pixel Shader
-//--------------------------------------------------------------------------------------
-
-float4 ps_main(VS_OUTPUT input) : SV_Target
+float4 ps_main(PS_INPUT input) : SV_TARGET
 {
-    float4 diffuse = input.mDiffuse * LightColor;
-	
-    float3 normal = normalize(input.mNormal);
-    float3 specular = 0;
-    
-    if (diffuse.x > 0)
+    float3 vNormal = normalize(input.Norm);
+    float3 vTangent = normalize(input.TangentWorld);
+    float3 vBiTanget = cross(vNormal, vTangent);
+
+    // ≥Î∏ª
+    float3 vNormalTangentSpace = txNormal.Sample(samLinear, input.TexCoord).rgb * 2.0f - 1.0f;
+    float3x3 WorldTransform = float3x3(vTangent, vBiTanget, vNormal);
+    if (UsingNormalMap)
     {
-        float3 lightdir = normalize(LightDir);
-        float3 halfDirection = normalize(lightdir + input.mViewDir);
-        float specularDot = saturate(dot(normal, -halfDirection));
-        specular = pow(specularDot, SpecularPower) * (float3) LightColor;
+        vNormal = mul(vNormalTangentSpace, WorldTransform);
+        vNormal = normalize(vNormal);
     }
+
+    // diffuse
+    float4 texDiffuse = (float4) 1;
+    if (UsingDiffuseMap)
+    {
+        texDiffuse = txDiffuse.Sample(samLinear, input.TexCoord);
+    }
+
+    // emmisive
+    float4 emmisive = 0;
+    if (UsingEmissiveMap)
+    {
+        emmisive = txEmissive.Sample(samLinear, input.TexCoord);
+    }
+
+    // opacity
+    float opacity = 1.0f;
+    if (UsingOpacityMap)
+    {
+        opacity = txOpacity.Sample(samLinear, input.TexCoord).a;
+    }
+
+    // Ω∫∆Â≈ß∑Ø
+    float NdotL = max(dot(vNormal, -LightDirection), 0);
+    float3 vView = normalize(EyePosition - input.WorldPos.xyz);
     
-    float4 finalColor = float4(specular + diffuse.rgb, 1.f);
+    float4 ambient = LightAmbient * MaterialAmbient;
     
-    return finalColor;
+    float4 diffuse = LightDiffuse * MaterialDiffuse * texDiffuse * NdotL;
+
+    float3 vHalf = normalize(-LightDirection + vView);
+    float SDot = max(dot(vNormal, vHalf), 0);
+
+    float power = pow(SDot, MaterialSpecularPower);
+
+    float4 specular = power * LightSpecular * MaterialSpecular;
+    if (UsingSpecularMap)
+    {
+        specular *= txSpecular.Sample(samLinear, input.TexCoord);
+    }
+
+    float4 finalColor = diffuse + specular + ambient + emmisive;
+
+    return float4(finalColor.xyz, opacity);
 }

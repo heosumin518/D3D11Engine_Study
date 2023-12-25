@@ -10,6 +10,11 @@ Mesh::~Mesh()
 {
 }
 
+void Mesh::Init(CB_UseTextureMap& transform, ComPtr<ID3D11Buffer> buffer, ComPtr<ID3D11BlendState> blendState)
+{
+	m_material->Init(transform, buffer, blendState);
+}
+
 void Mesh::Render(ComPtr<ID3D11DeviceContext> deviceContext)
 {
 	m_material->Render(deviceContext);

@@ -12,27 +12,41 @@ Material::~Material()
 	
 }
 
+void Material::Init(CB_UseTextureMap& cbUseTextureMap, ComPtr<ID3D11Buffer> matBuffer, ComPtr<ID3D11BlendState> blendState)
+{
+	m_cbUseTextureMap = cbUseTextureMap;
+	m_pUseTextureMapBuffer = matBuffer;
+	m_alphaBlendState = blendState;
+}
+
 void Material::Render(ComPtr<ID3D11DeviceContext> deviceContext)
 {
-	//deviceContext->PSSetShaderResources(0, 1, m_diffuseRV.GetAddressOf());
-	//deviceContext->PSSetShaderResources(1, 1, m_normalRV.GetAddressOf());
-	//deviceContext->PSSetShaderResources(2, 1, m_specularRV.GetAddressOf());
-	//deviceContext->PSSetShaderResources(3, 1, m_emissiveRV.GetAddressOf());
-	//deviceContext->PSSetShaderResources(4, 1, m_opacityRV.GetAddressOf());
+	for (int i = 0; i < TextureType::End; i++)
+		deviceContext->PSSetShaderResources(i, 1, &m_textures[i]);
 
-	//m_CBUseTextureMap.UseDiffuseMap = m_diffuseRV != nullptr ? true : false;
-	//m_CBUseTextureMap.UseNormalMap = m_normalRV != nullptr ? true : false;
-	//m_CBUseTextureMap.UseSpecularMap = m_specularRV != nullptr ? true : false;
-	//m_CBUseTextureMap.UseEmissiveMap = m_emissiveRV != nullptr ? true : false;
-	//m_CBUseTextureMap.UseOpacityMap = m_opacityRV != nullptr ? true : false;
+	m_cbUseTextureMap.isUseDiffuseMap = m_textures[Diffuse] != nullptr ? true : false;
+	m_cbUseTextureMap.isUseNormalMap = m_textures[Normal] != nullptr ? true : false;
+	m_cbUseTextureMap.isUseSpecularMap = m_textures[Specular] != nullptr ? true : false;
+	m_cbUseTextureMap.isUseEmissiveMap = m_textures[Emissive] != nullptr ? true : false;
+	m_cbUseTextureMap.isUseOpacityMap = m_textures[Opacity] != nullptr ? true : false;
 
-	//if (m_CBUseTextureMap.UseOpacityMap && m_alphaBlendState != nullptr)
-	//	deviceContext->OMSetBlendState(m_alphaBlendState.Get(), nullptr, 0xffffffff); // 알파블렌드 상태설정 , 다른옵션은 기본값
-	//else
-	//	deviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);	// 설정해제 , 다른옵션은 기본값
+	if (true == m_cbUseTextureMap.isUseOpacityMap)
+		deviceContext->OMSetBlendState(m_alphaBlendState.Get(), nullptr, 0xffffffff);
+	else
+		deviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
 
-	//deviceContext->UpdateSubresource(m_CBUseTextureMapBuffer.Get(), 0, nullptr, &m_CBUseTextureMap, 0, 0);
+	deviceContext->UpdateSubresource(m_pUseTextureMapBuffer.Get(), 0, nullptr, &m_cbUseTextureMap, 0, 0);
 
-	//deviceContext->PSSetConstantBuffers(3, 1, m_CBUseTextureMapBuffer.GetAddressOf());
-	//deviceContext->VSSetConstantBuffers(3, 1, m_CBUseTextureMapBuffer.GetAddressOf());
+	deviceContext->PSSetConstantBuffers(3, 1, m_pUseTextureMapBuffer.GetAddressOf());
+	deviceContext->VSSetConstantBuffers(3, 1, m_pUseTextureMapBuffer.GetAddressOf());
 }
+
+/*
+m_CBMaterial.useDiffuseMap = model->GetMaterials()[mi]->GetDiffuseRV() != nullptr ? true : false;
+m_CBMaterial.useNormalMap = model->GetMaterials()[mi]->GetNormalRV() != nullptr ? true : false;
+m_CBMaterial.useSpecularMap = model->GetMaterials()[mi]->GetSpecularRV() != nullptr ? true : false;
+m_CBMaterial.useEmissiveMap = model->GetMaterials()[mi]->GetEmissiveRV() != nullptr ? true : false;
+m_CBMaterial.useOpacityMap = model->GetMaterials()[mi]->GetOpacityRV() != nullptr ? true : false;
+
+
+*/

@@ -51,4 +51,5 @@ void Animation::Evaluate(Vector3& scale, Quaternion& rotation, Vector3& position
 	rotation = Quaternion::Slerp(m_animationKeys[m_curKey].rotation, m_animationKeys[m_nextKey].rotation, ratio);
 
 	m_node->SetLocalTransform(Matrix::CreateScale(scale) * Matrix::CreateFromQuaternion(rotation) * Matrix::CreateTranslation(position));
+		
 }
