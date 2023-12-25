@@ -33,28 +33,6 @@ void FBXTransformAnimation::Initialize()
 	// fbx 파일 로드하여 모델 생성
 	ModelLoader loader(m_device);
 	m_models.push_back(loader.LoadModelFile("../Resources/BoxHuman.fbx"));
-	//m_models.push_back(loader.LoadModelFile("../Resources/GOSEGU.fbx"));
-	//m_models.push_back(loader.LoadModelFile("../Resources/zeldaPosed001.fbx"));
-	//m_models.push_back(loader.LoadModelFile("../Resources/Character.fbx"));
-
-	m_camera.position = Vector3{ 0, 300, -500 };
-	m_camera.direction = Vector3{ 0, 0, 1 };
-	m_camera.headDir = Vector3{ 0, 1, 0 };
-	m_camera.fovY = XM_PIDIV2;
-	m_camera.farZ = 10000.f;
-
-	m_cbLight.direction = Vector3{ 0.3f, 0.f, 0.6f };
-	m_cbLight.ambient = Vector4{ 0.1f, 0.1f, 0.1f, 1.f };
-	m_cbLight.diffuse = Vector4{ 1.0f,1.0f,1.0f,1.0f };
-	m_cbLight.specular = Vector4{ 1.0f,1.0f,1.0f,1.0f };
-
-	m_cbMaterial.ambient = Vector4{ 1.0f,1.0f,1.0f,1.0f };
-	m_cbMaterial.diffuse = Vector4{ 1.0f,1.0f,1.0f,1.0f };
-	m_cbMaterial.specular = Vector4{ 1.0f,1.0f,1.0f,1.0f };
-	m_cbMaterial.specularPower = 200.f;
-
-	// 일단 하나만.
-	m_models[0]->Init(m_cbTransform, m_pTransformBuffer, m_cbUseTextureMap, m_pUseTextureMapBuffer, m_blendState);
 }
 
 void FBXTransformAnimation::Update()
@@ -63,15 +41,6 @@ void FBXTransformAnimation::Update()
 
 	auto deltaTime = m_timer.TotalTime();
 
-	if (m_camera.nearZ <= 0.0001f) { m_camera.nearZ = 0.0001f; }
-	if (m_camera.nearZ >= 9.9f) { m_camera.nearZ = 9.9f; }
-	if (m_camera.fovY <= 0.f) { m_camera.fovY = 0.01; }
-
-	m_camera.matView = XMMatrixLookToLH(m_camera.position, m_camera.direction, m_camera.headDir);
-	m_camera.matProjection = XMMatrixPerspectiveFovLH(m_camera.fovY, g_winSizeX / (FLOAT)g_winSizeY, m_camera.nearZ, m_camera.farZ);
-
-	m_cbLight.eyePos = m_camera.position;
-
 	for (auto& model : m_models)
 		model->Update(deltaTime);
 }
@@ -79,9 +48,6 @@ void FBXTransformAnimation::Update()
 void FBXTransformAnimation::Render()
 {
 	RenderBegin();
-
-	m_cbTransform.view = XMMatrixTranspose(m_camera.matView);
-	m_cbTransform.projection = XMMatrixTranspose(m_camera.matProjection);
 
 	// IA - VS - RS - PS - OM
 	{
@@ -93,23 +59,23 @@ void FBXTransformAnimation::Render()
 
 		// VS
 		m_deviceContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
-		m_deviceContext->VSSetConstantBuffers(1, 1, m_pLightBuffer.GetAddressOf());
-		m_deviceContext->VSSetConstantBuffers(2, 1, m_pMaterialBuffer.GetAddressOf());
+		//m_deviceContext->VSSetConstantBuffers(1, 1, m_pLightBuffer.GetAddressOf());
+		//m_deviceContext->VSSetConstantBuffers(2, 1, m_pMaterialBuffer.GetAddressOf());
 
 		// RS
 
 		// PS
 		m_deviceContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
 		m_deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
-		m_deviceContext->PSSetConstantBuffers(1, 1, m_pLightBuffer.GetAddressOf());
-		m_deviceContext->PSSetConstantBuffers(2, 1, m_pMaterialBuffer.GetAddressOf());
+		//m_deviceContext->PSSetConstantBuffers(1, 1, m_pLightBuffer.GetAddressOf());
+		//m_deviceContext->PSSetConstantBuffers(2, 1, m_pMaterialBuffer.GetAddressOf());
 
-		m_deviceContext->UpdateSubresource(m_pLightBuffer.Get(), 0, nullptr, &m_cbLight, 0, 0);
-		m_deviceContext->UpdateSubresource(m_pMaterialBuffer.Get(), 0, nullptr, &m_cbMaterial, 0, 0);
+		//m_deviceContext->UpdateSubresource(m_pLightBuffer.Get(), 0, nullptr, &m_cbLight, 0, 0);
+		//m_deviceContext->UpdateSubresource(m_pMaterialBuffer.Get(), 0, nullptr, &m_cbMaterial, 0, 0);
 
 		// OM
-		for (auto& model : m_models)
-			model->Render(m_deviceContext, m_cbTransform);
+		//for (auto& model : m_models)
+		//	model->Render(m_deviceContext, m_cbTransform);
 	}
 
 	RenderImGUI();
@@ -199,20 +165,20 @@ void FBXTransformAnimation::RenderImGUI()
 		ImGui::SliderFloat3("Position", (float*)&m_models[0]->GetPos(), 1, 100);
 
 		ImGui::Text("Light");
-		ImGui::SliderFloat3("LightDirection", (float*)&m_cbLight.direction, -1.0f, 1.0f);
-		ImGui::ColorEdit3("LightAmbient", (float*)&m_cbLight.ambient);
-		ImGui::ColorEdit3("LightDiffuse", (float*)&m_cbLight.diffuse);
-		ImGui::ColorEdit3("LightSpecular", (float*)&m_cbLight.specular);
-
-		ImGui::Text("Material");
-		ImGui::ColorEdit4("MaterialAmbient", (float*)&m_cbMaterial.ambient);
-		ImGui::ColorEdit4("MaterialDiffuse", (float*)&m_cbMaterial.diffuse);
-		ImGui::ColorEdit4("MaterialSpecular", (float*)&m_cbMaterial.specular);
-		//ImGui::ColorEdit4("MaterialEmissive", (float*)&m_cbMaterial.emissive);
-		ImGui::SliderFloat("MaterialSpecularPower", (float*)&m_cbMaterial.specularPower, 2.0f, 4096.0f);
-
-		ImGui::Text("Camera");
-		ImGui::SliderFloat3("Position", (float*)&m_camera.position, -2000.0f, 2000.0f);
+		//ImGui::SliderFloat3("LightDirection", (float*)&m_cbLight.direction, -1.0f, 1.0f);
+		//ImGui::ColorEdit3("LightAmbient", (float*)&m_cbLight.ambient);
+		//ImGui::ColorEdit3("LightDiffuse", (float*)&m_cbLight.diffuse);
+		//ImGui::ColorEdit3("LightSpecular", (float*)&m_cbLight.specular);
+		//
+		//ImGui::Text("Material");
+		//ImGui::ColorEdit4("MaterialAmbient", (float*)&m_cbMaterial.ambient);
+		//ImGui::ColorEdit4("MaterialDiffuse", (float*)&m_cbMaterial.diffuse);
+		//ImGui::ColorEdit4("MaterialSpecular", (float*)&m_cbMaterial.specular);
+		////ImGui::ColorEdit4("MaterialEmissive", (float*)&m_cbMaterial.emissive);
+		//ImGui::SliderFloat("MaterialSpecularPower", (float*)&m_cbMaterial.specularPower, 2.0f, 4096.0f);
+		//
+		//ImGui::Text("Camera");
+		//ImGui::SliderFloat3("Position", (float*)&m_camera.position, -2000.0f, 2000.0f);
 
 		ImGui::End();
 	}
@@ -240,33 +206,33 @@ void FBXTransformAnimation::CreateInputLayout()
 
 void FBXTransformAnimation::CreateConstantBuffer()
 {
-	D3D11_BUFFER_DESC desc;
-
-	ZeroMemory(&desc, sizeof(desc));
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	desc.ByteWidth = sizeof(CB_Transform);
-	desc.CPUAccessFlags = 0;
-	HR_T(m_device->CreateBuffer(&desc, nullptr, m_pTransformBuffer.GetAddressOf()));
-
-	ZeroMemory(&desc, sizeof(desc));
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	desc.ByteWidth = sizeof(CB_Light);
-	desc.CPUAccessFlags = 0;
-	HR_T(m_device->CreateBuffer(&desc, nullptr, m_pLightBuffer.GetAddressOf()));
-
-	ZeroMemory(&desc, sizeof(desc));
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	desc.ByteWidth = sizeof(CB_Material);
-	desc.CPUAccessFlags = 0;
-	HR_T(m_device->CreateBuffer(&desc, nullptr, m_pMaterialBuffer.GetAddressOf()));
-
-	ZeroMemory(&desc, sizeof(desc));
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	desc.ByteWidth = sizeof(CB_UseTextureMap);
-	desc.CPUAccessFlags = 0;
-	HR_T(m_device->CreateBuffer(&desc, nullptr, m_pUseTextureMapBuffer.GetAddressOf()));
+	//D3D11_BUFFER_DESC desc;
+	//
+	//ZeroMemory(&desc, sizeof(desc));
+	//desc.Usage = D3D11_USAGE_DEFAULT;
+	//desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	//desc.ByteWidth = sizeof(CB_Transform);
+	//desc.CPUAccessFlags = 0;
+	//HR_T(m_device->CreateBuffer(&desc, nullptr, m_pTransformBuffer.GetAddressOf()));
+	//
+	//ZeroMemory(&desc, sizeof(desc));
+	//desc.Usage = D3D11_USAGE_DEFAULT;
+	//desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	//desc.ByteWidth = sizeof(CB_Light);
+	//desc.CPUAccessFlags = 0;
+	//HR_T(m_device->CreateBuffer(&desc, nullptr, m_pLightBuffer.GetAddressOf()));
+	//
+	//ZeroMemory(&desc, sizeof(desc));
+	//desc.Usage = D3D11_USAGE_DEFAULT;
+	//desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	//desc.ByteWidth = sizeof(CB_Material);
+	//desc.CPUAccessFlags = 0;
+	//HR_T(m_device->CreateBuffer(&desc, nullptr, m_pMaterialBuffer.GetAddressOf()));
+	//
+	//ZeroMemory(&desc, sizeof(desc));
+	//desc.Usage = D3D11_USAGE_DEFAULT;
+	//desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	//desc.ByteWidth = sizeof(CB_UseTextureMap);
+	//desc.CPUAccessFlags = 0;
+	//HR_T(m_device->CreateBuffer(&desc, nullptr, m_pUseTextureMapBuffer.GetAddressOf()));
 }

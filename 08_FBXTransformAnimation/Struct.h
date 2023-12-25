@@ -1,72 +1,44 @@
-#pragma once
-#include "pch.h"
+struct CB_ConstantBuffer
+{
+	float specularPower;
+	float ambient;
+	float pad0[2];
+};
 
-struct CB_Transform
+static_assert((sizeof(CB_ConstantBuffer) % 16) == 0,
+	"Constant Buffer size must be 16-byte aligned");
+
+struct CB_BoolBuffer
+{
+	int isUseNormalMap;
+	int isUserSpecularMap;
+	int isUserGammaCorrection;
+	int isUseDiffuseMap;
+	int isUseEmissiveMap;
+	int isUseOpacityMap;
+	int pad0[2];
+};
+
+static_assert((sizeof(CB_BoolBuffer) % 16) == 0,
+	"Constant Buffer size must be 16-byte aligned");
+
+struct CB_TransformBuffer
 {
 	Matrix world = Matrix::Identity;
 	Matrix view = Matrix::Identity;
 	Matrix projection = Matrix::Identity;
 };
 
-static_assert((sizeof(CB_Transform) % 16) == 0,
+static_assert((sizeof(CB_TransformBuffer) % 16) == 0,
 	"Constant Buffer size must be 16-byte aligned");
 
-struct CB_Light
+struct CB_LightDirBuffer
 {
-	Vector3 direction;
-	float pad0;
-	Vector4 ambient;
-	Vector4 diffuse;
-	Vector4 specular;
-	Vector3 eyePos;
-	float pad1;
+	Vector4 lightDir;
+	Vector4 lightColor;
+	Vector4 worldCameraPos;
+	Vector4 pad0[1];
 };
 
-static_assert((sizeof(CB_Light) % 16) == 0,
-	"Constant Buffer size must be 16-byte aligned");
-
-struct CB_Material
-{
-	Vector4 ambient;
-	Vector4 diffuse;
-	Vector4 specular;
-	float specularPower;
-	Vector3 pad0;
-};
-
-static_assert((sizeof(CB_Material) % 16) == 0,
-	"Constant Buffer size must be 16-byte aligned");
-
-struct CB_UseTextureMap
-{
-	bool isUseDiffuseMap = false;
-	bool pad0[3];
-	bool isUseNormalMap = false;
-	bool pad1[3];
-	bool isUseSpecularMap = false;
-	bool pad2[3];
-	bool isUseEmissiveMap = false;
-	bool pad3[3];
-	bool isUseOpacityMap = false;
-	bool pad4[3];
-	Vector3 pad5;
-};
-
-static_assert((sizeof(CB_UseTextureMap) % 16) == 0,
-	"Constant Buffer size must be 16-byte aligned");
-
-struct CameraInfo
-{
-	Vector3 position;
-	Vector3 direction;
-	Vector3 headDir;
-	Matrix matView;
-
-	float fovY;
-	float nearZ;
-	float farZ;
-	Matrix matProjection;
-};
-
-static_assert((sizeof(CameraInfo) % 16) == 0,
+static_assert((sizeof(CB_LightDirBuffer) % 16) == 0,
 	"Constant Buffer size must be 16-byte aligned");
