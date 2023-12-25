@@ -1,5 +1,9 @@
 #include "pch.h"
 #include "Model.h"
+#include "Node.h"
+#include "Mesh.h"
+#include "Material.h"
+#include "Animation.h"
 
 Model::Model()
 {
@@ -11,27 +15,25 @@ Model::~Model()
 	
 }
 
-void Model::Init(CB_Transform& nodeTransform, ComPtr<ID3D11Buffer> nodeBuffer,
-	CB_UseTextureMap& matTransform, ComPtr<ID3D11Buffer> matBuffer, ComPtr<ID3D11BlendState> blendState)
+bool Model::ReadFile(ComPtr<ID3D11Device> device, const char* filePath)
 {
-	m_root->Init(nodeTransform, nodeBuffer, matTransform, matBuffer, blendState);
-}
+	Assimp::Importer importer;
+
+	m_scene = importer.ReadFile(filePath,
+		aiProcess_ConvertToLeftHanded |	// DX¿ë ¿Þ¼ÕÁÂÇ¥°è º¯È¯
+		aiProcess_Triangulate | // vertex »ï°¢Çü À¸·Î Ãâ·Â
+		aiProcess_GenUVCoords |	// ÅØ½ºÃ³ ÁÂÇ¥ »ý¼º
+		aiProcess_GenNormals |	// Normal Á¤º¸ »ý¼º
+		aiProcess_CalcTangentSpace // ÅºÁ¨Æ® º¤ÅÍ »ý¼º
+	);
+	assert(m_scene != nullptr);
+
+	m_meshes.resize(m_scene->mNumMeshes);
+	m_materials.resize(m_scene->mNumMaterials);
+
+	for (UINT i = 0; i < m_scene->mNumMaterials; i++)
+		m_materials[i]->Create(device, m_scene->mMaterials[i]);
 
 
-void Model::Update(float deltaTime)
-{
-	Matrix scale = XMMatrixScaling(m_scale.x, m_scale.y, m_scale.z);
-	Matrix rotation = XMMatrixRotationX(m_rotation.x) * XMMatrixRotationY(m_rotation.y) * XMMatrixRotationZ(m_rotation.z);
-	Matrix translate = XMMatrixTranslation(m_position.x, m_position.y, m_position.z);
-	m_transform = scale * rotation * translate;
 
-	for (auto& anim : m_animations)
-		anim->Update(deltaTime);
-
-	m_root->Update();
-}
-
-void Model::Render(ComPtr<ID3D11DeviceContext> deviceContext, CB_Transform& nodeTransform)
-{
-	m_root->Render(deviceContext, nodeTransform);
 }

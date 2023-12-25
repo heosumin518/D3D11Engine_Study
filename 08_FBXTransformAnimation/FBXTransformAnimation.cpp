@@ -1,6 +1,7 @@
 #include "pch.h"
+#include "Struct.h"
 #include "FBXTransformAnimation.h"
-#include "ModelLoader.h"
+
 
 FBXTransformAnimation::FBXTransformAnimation(const int32& width, const int32& height, const std::wstring& name)
 	: GameProcessor(width, height, name)
@@ -30,9 +31,8 @@ void FBXTransformAnimation::Initialize()
 
 	GameProcessor::InitImGUI();
 
-	// fbx 파일 로드하여 모델 생성
-	ModelLoader loader(m_device);
-	m_models.push_back(loader.LoadModelFile("../Resources/BoxHuman.fbx"));
+	m_model = make_shared<Model>();
+	m_model->ReadFile(m_device, "../Resources/GESEGU.fbx");	//BoxHuman.fbx
 }
 
 void FBXTransformAnimation::Update()
@@ -41,8 +41,28 @@ void FBXTransformAnimation::Update()
 
 	auto deltaTime = m_timer.TotalTime();
 
-	for (auto& model : m_models)
-		model->Update(deltaTime);
+	// update camera
+	{
+		m_eye = XMVectorSet(m_cameraPos.x, m_cameraPos.y, m_cameraPos.z, 0.f);
+		m_at = XMVectorSet(m_cameraPos.x, m_cameraPos.y + 1.f, 100.f, 0.f);
+		m_up = XMVectorSet(0.f, 1.f, 0.f, 0.f);
+
+		m_view = XMMatrixLookAtLH(m_eye, m_at, m_up);		// ViewTransform 행렬 구하기. XMMatrixLookToLH() 함수로도 구할 수 있음
+		//m_projection = XMMatrixPerspectiveFovLH(m_cameraFOV / 180.0f * 3.14f, g_winSizeX / static_cast<FLOAT>(g_winSizeY), m_cameraNear, m_cameraFar);		// 0.01f, 100.0f 각각 near 와 far
+		m_projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, g_winSizeX / static_cast<FLOAT>(g_winSizeY), 1.0f, 10000.0f);		// 0.01f, 100.0f 각각 near 와 far
+	}
+
+	// update model SRT transform
+	{
+		Matrix scale = Matrix::CreateScale(m_modelScale);
+		Matrix rotation = Matrix::CreateFromYawPitchRoll(Vector3(XMConvertToRadians(m_rotation.x), XMConvertToRadians(m_rotation.y), 0));
+		m_world = scale * rotation;
+	}
+
+
+
+	//for (auto& model : m_models)
+	//	model->Update(deltaTime);
 }
 
 void FBXTransformAnimation::Render()
@@ -206,33 +226,22 @@ void FBXTransformAnimation::CreateInputLayout()
 
 void FBXTransformAnimation::CreateConstantBuffer()
 {
-	//D3D11_BUFFER_DESC desc;
-	//
-	//ZeroMemory(&desc, sizeof(desc));
-	//desc.Usage = D3D11_USAGE_DEFAULT;
-	//desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	//desc.ByteWidth = sizeof(CB_Transform);
-	//desc.CPUAccessFlags = 0;
-	//HR_T(m_device->CreateBuffer(&desc, nullptr, m_pTransformBuffer.GetAddressOf()));
-	//
-	//ZeroMemory(&desc, sizeof(desc));
-	//desc.Usage = D3D11_USAGE_DEFAULT;
-	//desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	//desc.ByteWidth = sizeof(CB_Light);
-	//desc.CPUAccessFlags = 0;
-	//HR_T(m_device->CreateBuffer(&desc, nullptr, m_pLightBuffer.GetAddressOf()));
-	//
-	//ZeroMemory(&desc, sizeof(desc));
-	//desc.Usage = D3D11_USAGE_DEFAULT;
-	//desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	//desc.ByteWidth = sizeof(CB_Material);
-	//desc.CPUAccessFlags = 0;
-	//HR_T(m_device->CreateBuffer(&desc, nullptr, m_pMaterialBuffer.GetAddressOf()));
-	//
-	//ZeroMemory(&desc, sizeof(desc));
-	//desc.Usage = D3D11_USAGE_DEFAULT;
-	//desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	//desc.ByteWidth = sizeof(CB_UseTextureMap);
-	//desc.CPUAccessFlags = 0;
-	//HR_T(m_device->CreateBuffer(&desc, nullptr, m_pUseTextureMapBuffer.GetAddressOf()));
+	D3D11_BUFFER_DESC desc;
+	
+	ZeroMemory(&desc, sizeof(desc));
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	desc.CPUAccessFlags = 0;
+
+	desc.ByteWidth = sizeof(CB_ConstantBuffer);
+	HR_T(m_device->CreateBuffer(&desc, nullptr, m_pConstantBuffer.GetAddressOf()));
+	
+	desc.ByteWidth = sizeof(CB_BoolBuffer);
+	HR_T(m_device->CreateBuffer(&desc, nullptr, m_pBoolBuffer.GetAddressOf()));
+	
+	desc.ByteWidth = sizeof(CB_TransformBuffer);
+	HR_T(m_device->CreateBuffer(&desc, nullptr, m_pTransformBuffer.GetAddressOf()));
+	
+	desc.ByteWidth = sizeof(CB_LightDirBuffer);
+	HR_T(m_device->CreateBuffer(&desc, nullptr, m_pLightBuffer.GetAddressOf()));
 }

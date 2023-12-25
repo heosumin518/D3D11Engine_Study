@@ -13,8 +13,7 @@ public:
 	Material();
 	virtual ~Material();
 
-	void Init(CB_UseTextureMap& cbUseTextureMap, ComPtr<ID3D11Buffer> matBuffer, ComPtr<ID3D11BlendState> blendState);
-	void Render(ComPtr<ID3D11DeviceContext> deviceContext);
+	void Create(ComPtr<ID3D11Device> device, aiMaterial* srcMaterial);
 
 public:
 	ComPtr<ID3D11ShaderResourceView> GetDiffuseRV() { return m_diffuseRV; }
@@ -24,9 +23,7 @@ public:
 	ComPtr<ID3D11ShaderResourceView> GetOpacityRV() { return m_opacityRV; }
 
 private:
-	friend ModelLoader;
-	friend Model;
-
+	string m_name;
 
 	// Shader Resource View
 	ComPtr<ID3D11ShaderResourceView> m_diffuseRV = nullptr;		// diffuse ∏Æº“Ω∫ ∫‰
@@ -35,13 +32,5 @@ private:
 	ComPtr<ID3D11ShaderResourceView> m_emissiveRV = nullptr;	// ¿ÃπÃΩ√∫Í∏  ∏Æº“Ω∫ ∫‰.	
 	ComPtr<ID3D11ShaderResourceView> m_opacityRV = nullptr;		// ≈ı∏Ì∏  ∏Æº“Ω∫ ∫‰.
 
-	// now use 23/12/22
-	string name;
-	ComPtr<ID3D11ShaderResourceView> m_textures[TextureType::End];
-
-	CB_UseTextureMap m_cbUseTextureMap;
-	ComPtr<ID3D11Buffer> m_pUseTextureMapBuffer;
-
-	ComPtr<ID3D11BlendState> m_alphaBlendState;
 };
 

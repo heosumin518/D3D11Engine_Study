@@ -27,9 +27,6 @@
     <ClCompile Include="Model.cpp">
       <Filter>Model</Filter>
     </ClCompile>
-    <ClCompile Include="ModelLoader.cpp">
-      <Filter>Model</Filter>
-    </ClCompile>
     <ClCompile Include="FBXTransformAnimation.cpp">
       <Filter>Main</Filter>
     </ClCompile>
@@ -55,9 +52,6 @@
     </ClInclude>
     <ClInclude Include="FBXTransformAnimation.h">
       <Filter>Main</Filter>
-    </ClInclude>
-    <ClInclude Include="ModelLoader.h">
-      <Filter>Model</Filter>
     </ClInclude>
     <ClInclude Include="Material.h">
       <Filter>Model\Material</Filter>
