@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Struct.h"
+#include "ModelLoader.h"
 #include "FBXTransformAnimation.h"
 
 
@@ -31,8 +32,12 @@ void FBXTransformAnimation::Initialize()
 
 	GameProcessor::InitImGUI();
 
-	m_model = make_shared<Model>();
-	m_model->ReadFile(m_device, "../Resources/GESEGU.fbx");	//BoxHuman.fbx
+	shared_ptr<ModelLoader> loader = make_shared<ModelLoader>(m_device);
+
+	m_model = loader->LoadModelFile("../Resources/BoxHuman.fbx");
+
+	//m_model->ReadFile(m_device, "../Resources/BoxHuman.fbx");
+	//m_model->ReadFile(m_device, "../Resources/GESEGU.fbx");
 }
 
 void FBXTransformAnimation::Update()
@@ -179,10 +184,10 @@ void FBXTransformAnimation::RenderImGUI()
 		ImGui::Begin("Properties");
 
 		ImGui::Text("Model");
-		ImGui::SliderFloat("Scale", (float*)&m_models[0]->GetScale(), 1, 100);
-		ImGui::DragFloat3("##rotate", (float*)&m_models[0]->GetRotation(), 0.1f, -360.f, 360.f);
-		ImGui::SliderFloat2("Rotation", (float*)&m_models[0]->GetRotation(), -180, 180);
-		ImGui::SliderFloat3("Position", (float*)&m_models[0]->GetPos(), 1, 100);
+		//ImGui::SliderFloat("Scale", (float*)&m_models[0]->GetScale(), 1, 100);
+		//ImGui::DragFloat3("##rotate", (float*)&m_models[0]->GetRotation(), 0.1f, -360.f, 360.f);
+		//ImGui::SliderFloat2("Rotation", (float*)&m_models[0]->GetRotation(), -180, 180);
+		//ImGui::SliderFloat3("Position", (float*)&m_models[0]->GetPos(), 1, 100);
 
 		ImGui::Text("Light");
 		//ImGui::SliderFloat3("LightDirection", (float*)&m_cbLight.direction, -1.0f, 1.0f);

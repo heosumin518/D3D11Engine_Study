@@ -45,6 +45,12 @@
     <ClCompile Include="Animation.cpp">
       <Filter>Model\Animation</Filter>
     </ClCompile>
+    <ClCompile Include="NodeAnimation.cpp">
+      <Filter>Model\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelLoader.cpp">
+      <Filter>Model</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Model.h">
@@ -66,6 +72,12 @@
       <Filter>Model\Animation</Filter>
     </ClInclude>
     <ClInclude Include="Struct.h" />
+    <ClInclude Include="NodeAnimation.h">
+      <Filter>Model\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelLoader.h">
+      <Filter>Model</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="PixelShader.hlsl">

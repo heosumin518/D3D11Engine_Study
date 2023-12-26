@@ -1,19 +1,24 @@
 #pragma once
 
+class ModelLoader;
 class Node;
 class Mesh;
 class Material;
 class Animation;
 
-class Model
+class Model : enable_shared_from_this<Model>
 {
 public:
 	Model();
 	~Model();
 
 	void Update(float deltaTime);
-	bool ReadFile(ComPtr<ID3D11Device> device, const char* filePath);
-	shared_ptr<Material> GetMaterialByIndex(UINT index);
+	//void ReadFile(ComPtr<ID3D11Device> device, const char* filePath);
+	shared_ptr<Material> GetMaterialByIndex(UINT index) { return m_materials[index]; }
+
+public:
+	friend ModelLoader;
+	friend Node;
 
 private:
 	const aiScene* m_scene;
