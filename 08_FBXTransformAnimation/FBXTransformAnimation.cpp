@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Struct.h"
 #include "ModelLoader.h"
+#include "Mesh.h"
+#include "Material.h"
 #include "FBXTransformAnimation.h"
 
 
@@ -34,10 +36,8 @@ void FBXTransformAnimation::Initialize()
 
 	shared_ptr<ModelLoader> loader = make_shared<ModelLoader>(m_device);
 
-	m_model = loader->LoadModelFile("../Resources/BoxHuman.fbx");
+	m_model = loader->LoadModelFile("../Resources/GOSEGU.fbx"); //BoxHuman
 
-	//m_model->ReadFile(m_device, "../Resources/BoxHuman.fbx");
-	//m_model->ReadFile(m_device, "../Resources/GESEGU.fbx");
 }
 
 void FBXTransformAnimation::Update()
@@ -48,59 +48,110 @@ void FBXTransformAnimation::Update()
 
 	// update camera
 	{
-		m_eye = XMVectorSet(m_cameraPos.x, m_cameraPos.y, m_cameraPos.z, 0.f);
-		m_at = XMVectorSet(m_cameraPos.x, m_cameraPos.y + 1.f, 100.f, 0.f);
+		m_eye = XMVectorSet(m_cameraPos[0], m_cameraPos[1], m_cameraPos[2], 0.f);
+		m_at = XMVectorSet(m_cameraPos[0], m_cameraPos[1] + 1.f, 100.f, 0.f);
 		m_up = XMVectorSet(0.f, 1.f, 0.f, 0.f);
 
 		m_view = XMMatrixLookAtLH(m_eye, m_at, m_up);		// ViewTransform 행렬 구하기. XMMatrixLookToLH() 함수로도 구할 수 있음
-		//m_projection = XMMatrixPerspectiveFovLH(m_cameraFOV / 180.0f * 3.14f, g_winSizeX / static_cast<FLOAT>(g_winSizeY), m_cameraNear, m_cameraFar);		// 0.01f, 100.0f 각각 near 와 far
-		m_projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, g_winSizeX / static_cast<FLOAT>(g_winSizeY), 1.0f, 10000.0f);		// 0.01f, 100.0f 각각 near 와 far
+		m_projection = XMMatrixPerspectiveFovLH(m_cameraFOV / 180.0f * 3.14f, g_winSizeX / static_cast<FLOAT>(g_winSizeY), m_cameraNear, m_cameraFar);		// 0.01f, 100.0f 각각 near 와 far
 	}
 
-	// update model SRT transform
+	// update model SRT Matrix
 	{
 		Matrix scale = Matrix::CreateScale(m_modelScale);
 		Matrix rotation = Matrix::CreateFromYawPitchRoll(Vector3(XMConvertToRadians(m_rotation.x), XMConvertToRadians(m_rotation.y), 0));
-		m_world = scale * rotation;
+		Matrix translate = Matrix::CreateTranslation(m_modelTransform);
+		m_world = scale * rotation * translate;
 	}
 
 
-
-	//for (auto& model : m_models)
-	//	model->Update(deltaTime);
+	m_model->Update(deltaTime);
 }
 
 void FBXTransformAnimation::Render()
 {
 	RenderBegin();
 
+	m_cbBool.isUseGammaCorrection = m_isUseGamma;
+
+	m_cbTransform.world = XMMatrixTranspose(m_world);
+	m_cbTransform.view = XMMatrixTranspose(m_view);
+	m_cbTransform.projection = XMMatrixTranspose(m_projection);
+
+
+	// update light
+	{
+		m_cbConstant.ambient = m_ambient;
+		m_cbConstant.specularPower = m_specularPower;
+		
+		m_cbLight.lightColor = m_lightColor;
+		m_cbLight.lightDir = m_lightDir;
+		m_cbLight.lightDir.Normalize();
+		m_cbLight.worldCameraPos = XMVectorSet(m_cameraPos[0], m_cameraPos[1], m_cameraPos[2], 0.f);
+	}
+
 	// IA - VS - RS - PS - OM
 	{
 		// IA
-		//m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.GetAddressOf(), &stride, &offset);
-		//m_deviceContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);	// INDEX값의 범위
 		m_deviceContext->IASetInputLayout(m_inputLayout.Get());
 		m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		// VS
 		m_deviceContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
-		//m_deviceContext->VSSetConstantBuffers(1, 1, m_pLightBuffer.GetAddressOf());
-		//m_deviceContext->VSSetConstantBuffers(2, 1, m_pMaterialBuffer.GetAddressOf());
+		m_deviceContext->VSSetConstantBuffers(0, 1, m_pConstantBuffer.GetAddressOf());
+		m_deviceContext->VSSetConstantBuffers(1, 1, m_pBoolBuffer.GetAddressOf());
+		m_deviceContext->VSSetConstantBuffers(2, 1, m_pTransformBuffer.GetAddressOf());
+		m_deviceContext->VSSetConstantBuffers(3, 1, m_pLightBuffer.GetAddressOf());
 
 		// RS
 
 		// PS
 		m_deviceContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
 		m_deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
-		//m_deviceContext->PSSetConstantBuffers(1, 1, m_pLightBuffer.GetAddressOf());
-		//m_deviceContext->PSSetConstantBuffers(2, 1, m_pMaterialBuffer.GetAddressOf());
+		m_deviceContext->PSSetConstantBuffers(0, 1, m_pConstantBuffer.GetAddressOf());
+		m_deviceContext->PSSetConstantBuffers(1, 1, m_pBoolBuffer.GetAddressOf());
+		m_deviceContext->PSSetConstantBuffers(2, 1, m_pTransformBuffer.GetAddressOf());
+		m_deviceContext->PSSetConstantBuffers(3, 1, m_pLightBuffer.GetAddressOf());
 
-		//m_deviceContext->UpdateSubresource(m_pLightBuffer.Get(), 0, nullptr, &m_cbLight, 0, 0);
-		//m_deviceContext->UpdateSubresource(m_pMaterialBuffer.Get(), 0, nullptr, &m_cbMaterial, 0, 0);
+		m_deviceContext->UpdateSubresource(m_pConstantBuffer.Get(), 0, nullptr, &m_cbConstant, 0, 0);
+		m_deviceContext->UpdateSubresource(m_pLightBuffer.Get(), 0, nullptr, &m_cbLight, 0, 0);
 
-		// OM
-		//for (auto& model : m_models)
-		//	model->Render(m_deviceContext, m_cbTransform);
+		for (UINT i = 0; i < m_model->GetMeshes().size(); i++)
+		{
+			UINT mi = m_model->GetMeshes()[i]->GetMaterialIndex();
+
+			m_deviceContext->PSSetShaderResources(0, 1, m_model->GetMaterialByIndex(mi)->GetDiffuseRV().GetAddressOf());
+			m_deviceContext->PSSetShaderResources(1, 1, m_model->GetMaterialByIndex(mi)->GetNormalRV().GetAddressOf());
+			m_deviceContext->PSSetShaderResources(2, 1, m_model->GetMaterialByIndex(mi)->GetSpecularRV().GetAddressOf());
+			m_deviceContext->PSSetShaderResources(3, 1, m_model->GetMaterialByIndex(mi)->GetEmissiveRV().GetAddressOf());
+			m_deviceContext->PSSetShaderResources(4, 1, m_model->GetMaterialByIndex(mi)->GetOpacityRV().GetAddressOf());
+
+			m_cbBool.isUseDiffuseMap = m_model->GetMaterialByIndex(mi)->GetDiffuseRV() != nullptr ? true : false;
+			m_cbBool.isUseNormalMap = m_model->GetMaterialByIndex(mi)->GetNormalRV() != nullptr ? true : false;
+			m_cbBool.isUseSpecularMap = m_model->GetMaterialByIndex(mi)->GetSpecularRV() != nullptr ? true : false;
+			m_cbBool.isUseEmissiveMap = m_model->GetMaterialByIndex(mi)->GetEmissiveRV() != nullptr ? true : false;
+			m_cbBool.isUseOpacityMap = m_model->GetMaterialByIndex(mi)->GetOpacityRV() != nullptr ? true : false;
+
+			if (true == m_cbBool.isUseOpacityMap)
+				m_deviceContext->OMSetBlendState(m_blendState.Get(), nullptr, 0xffffffff);
+			else
+				m_deviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+
+			m_cbTransform.world *= XMMatrixTranspose(m_model->GetMeshes()[i]->GetNodeWorldMatrix());
+			m_deviceContext->UpdateSubresource(m_pTransformBuffer.Get(), 0, nullptr, &m_cbTransform, 0, 0);
+			m_deviceContext->UpdateSubresource(m_pBoolBuffer.Get(), 0, nullptr, &m_cbBool, 0, 0);
+
+			m_deviceContext->IASetIndexBuffer(m_model->GetMeshes()[i]->GetIndexBuffer().Get(), DXGI_FORMAT_R16_UINT, 0);
+			m_deviceContext->IASetVertexBuffers
+			(
+				0, 1,
+				m_model->GetMeshes()[i]->GetVertexBuffer().GetAddressOf(),
+				&m_model->GetMeshes()[i]->GetVertexBufferStride(),
+				&m_model->GetMeshes()[i]->GetVertexBufferOffset()
+			);
+
+			m_deviceContext->DrawIndexed(m_model->GetMeshes()[i]->GetIndexCount(), 0, 0);
+		}
 	}
 
 	RenderImGUI();
@@ -119,91 +170,23 @@ void FBXTransformAnimation::RenderImGUI()
 	ImGui::NewFrame();
 
 	{
-	//// camera control window
-	//{
-	//	ImGui::SetNextWindowPos(ImVec2(420, 10));
-	//	ImGui::SetNextWindowSize(ImVec2(450, 150));		// 메뉴 창 크기 설정
-	//	ImGui::Begin("Camera Control Panel");
-
-	//	ImGui::Text("Adjust camera position");
-	//	ImGui::SliderFloat3("Camera (x, y, z)", reinterpret_cast<float*>(&m_cameraPos), -1000.0f, 1000.0f);
-	//	ImGui::SliderFloat("FOV", &m_cameraFOV, 0.01f, 180.0f);
-	//	ImGui::SliderFloat("Near", &m_cameraNear, 0.01f, 10.0f);
-	//	ImGui::SliderFloat("Far", &m_cameraFar, 1.f, 10500.0f);
-
-	//	ImGui::End();
-	//}
-
-	//// cube control window
-	//{
-	//	ImGui::SetNextWindowPos(ImVec2(10, 10));
-	//	ImGui::SetNextWindowSize(ImVec2(400, 150));		// 메뉴 창 크기 설정
-	//	ImGui::Begin("Cube Control Panel");
-
-	//	ImGui::Text("Rotate Cube");
-	//	ImGui::SliderFloat("X", &m_cubeRotateInfo.x, 0.f, 10.0f);
-	//	ImGui::SliderFloat("Y", &m_cubeRotateInfo.y, 0.f, 10.0f);
-	//	ImGui::SliderFloat("Z", &m_cubeRotateInfo.z, 0.f, 10.0f);
-	//	ImGui::SliderFloat("Scale", &m_modelScale, 0.f, 1000.0f);
-
-	//	ImGui::End();
-	//}
-
-	//// light control window
-	//{
-	//	ImGui::SetNextWindowPos(ImVec2(10, 170));
-	//	ImGui::SetNextWindowSize(ImVec2(400, 150));		// 메뉴 창 크기 설정
-	//	ImGui::Begin("Light Control Panel");
-
-	//	ImGui::SliderFloat3("Direction", reinterpret_cast<float*>(&m_CBLight.direction), -1.f, 1.f);
-	//	ImGui::ColorEdit4("Ambient", reinterpret_cast<float*>(&m_CBLight.ambient));
-	//	ImGui::ColorEdit4("Diffuse", reinterpret_cast<float*>(&m_CBLight.diffuse));
-	//	ImGui::ColorEdit4("Specular", reinterpret_cast<float*>(&m_CBLight.specular));
-
-	//	ImGui::End();
-	//}
-
-	//// material control window
-	//{
-	//	ImGui::SetNextWindowPos(ImVec2(1150, 10));
-	//	ImGui::SetNextWindowSize(ImVec2(400, 180));		// 메뉴 창 크기 설정
-	//	ImGui::Begin("Metarial Control Panel");
-
-	//	ImGui::Checkbox("UseNormalMap", &m_CBMaterial.useNormalMap);
-	//	ImGui::Checkbox("UseSpecularMap", &m_CBMaterial.useSpecularMap);
-	//	ImGui::ColorEdit4("Ambient", reinterpret_cast<float*>(&m_CBMaterial.ambient));
-	//	ImGui::ColorEdit4("Diffuse", reinterpret_cast<float*>(&m_CBMaterial.diffuse));
-	//	ImGui::ColorEdit4("Specular", reinterpret_cast<float*>(&m_CBMaterial.specular));
-	//	ImGui::SliderFloat("SpecularPower", &m_CBMaterial.specularPower, 0.f, 2000.f);
-
-	//	ImGui::End();
-	//}
-	}
-
-	{
 		ImGui::Begin("Properties");
 
-		ImGui::Text("Model");
-		//ImGui::SliderFloat("Scale", (float*)&m_models[0]->GetScale(), 1, 100);
-		//ImGui::DragFloat3("##rotate", (float*)&m_models[0]->GetRotation(), 0.1f, -360.f, 360.f);
-		//ImGui::SliderFloat2("Rotation", (float*)&m_models[0]->GetRotation(), -180, 180);
-		//ImGui::SliderFloat3("Position", (float*)&m_models[0]->GetPos(), 1, 100);
+		ImGui::Text("Camera");
+		ImGui::SliderFloat3("Position", m_cameraPos, -1000.f, 1000.f);
+		ImGui::SliderFloat("Far", &m_cameraFar, 1.f, 10000.f);
+		ImGui::SliderFloat("Near", &m_cameraNear, 0.01, 10.f);
+		ImGui::SliderFloat("FOV", &m_cameraFOV, -20.f, 180.f);
 
+
+		ImGui::Text("Model");
+		ImGui::SliderFloat3("Position", (float*)&m_modelTransform, -1.0f, 1.0f);
+		ImGui::SliderFloat2("Rotation", (float*)&m_rotation, -360.f, 360.f);
+		ImGui::SliderFloat("Scale", &m_modelScale, 0.f, 5.f);
+		
 		ImGui::Text("Light");
-		//ImGui::SliderFloat3("LightDirection", (float*)&m_cbLight.direction, -1.0f, 1.0f);
-		//ImGui::ColorEdit3("LightAmbient", (float*)&m_cbLight.ambient);
-		//ImGui::ColorEdit3("LightDiffuse", (float*)&m_cbLight.diffuse);
-		//ImGui::ColorEdit3("LightSpecular", (float*)&m_cbLight.specular);
-		//
-		//ImGui::Text("Material");
-		//ImGui::ColorEdit4("MaterialAmbient", (float*)&m_cbMaterial.ambient);
-		//ImGui::ColorEdit4("MaterialDiffuse", (float*)&m_cbMaterial.diffuse);
-		//ImGui::ColorEdit4("MaterialSpecular", (float*)&m_cbMaterial.specular);
-		////ImGui::ColorEdit4("MaterialEmissive", (float*)&m_cbMaterial.emissive);
-		//ImGui::SliderFloat("MaterialSpecularPower", (float*)&m_cbMaterial.specularPower, 2.0f, 4096.0f);
-		//
-		//ImGui::Text("Camera");
-		//ImGui::SliderFloat3("Position", (float*)&m_camera.position, -2000.0f, 2000.0f);
+		ImGui::SliderFloat3("Color", (float*)&m_lightColor, 0.0f, 1.0f);
+		ImGui::SliderFloat3("Direction", (float*)&m_lightDir, 0.f, 1.0f);
 
 		ImGui::End();
 	}
@@ -219,7 +202,7 @@ void FBXTransformAnimation::CreateInputLayout()
 	D3D11_INPUT_ELEMENT_DESC layout[] =  // 인풋 레이아웃은 버텍스 쉐이더가 입력받을 데이터의 형식을 지정한다.
 	{
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"UV", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 		{"TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};

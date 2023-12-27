@@ -14,8 +14,8 @@ static_assert((sizeof(CB_ConstantBuffer) % 16) == 0,
 struct CB_BoolBuffer
 {
 	int isUseNormalMap;
-	int isUserSpecularMap;
-	int isUserGammaCorrection;
+	int isUseSpecularMap;
+	int isUseGammaCorrection;
 	int isUseDiffuseMap;
 	int isUseEmissiveMap;
 	int isUseOpacityMap;

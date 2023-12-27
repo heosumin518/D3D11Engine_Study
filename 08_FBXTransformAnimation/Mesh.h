@@ -4,7 +4,7 @@
 
 struct Vertex
 {
-	Vector3 position;
+	Vector4 position;
 	Vector2 uv;
 	Vector3 normal;
 	Vector3 tangent;
@@ -23,6 +23,14 @@ public:
 
 	void CreateVertexBuffer(ComPtr<ID3D11Device> device, vector<Vertex>& vertices);
 	void CreateIndexBuffer(ComPtr<ID3D11Device> device, vector<WORD>& indices);
+
+	UINT GetMaterialIndex() const { return m_materialIndex; }
+	Matrix GetNodeWorldMatrix() const { return *m_nodeWorld; }
+	ComPtr<ID3D11Buffer> GetVertexBuffer() { return m_vertexBuffer; }
+	ComPtr<ID3D11Buffer> GetIndexBuffer() { return m_indexBuffer; }
+	UINT& GetVertexBufferStride() { return m_vertexBufferStride; }
+	UINT& GetVertexBufferOffset() { return m_vertexBufferOffset; }
+	UINT GetIndexCount() { return m_indexCount; }
 
 public:
 	friend Node;

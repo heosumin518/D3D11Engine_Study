@@ -13,8 +13,9 @@ public:
 	~Model();
 
 	void Update(float deltaTime);
-	//void ReadFile(ComPtr<ID3D11Device> device, const char* filePath);
 	shared_ptr<Material> GetMaterialByIndex(UINT index) { return m_materials[index]; }
+	vector<shared_ptr<Mesh>> GetMeshes() { return m_meshes; }
+
 
 public:
 	friend ModelLoader;

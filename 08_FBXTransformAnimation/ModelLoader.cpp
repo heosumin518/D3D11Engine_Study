@@ -156,9 +156,23 @@ shared_ptr<Node> ModelLoader::CreateNode(shared_ptr<Model> model, aiNode* srcNod
 	node->m_local = transform.Transpose();		// d3d 는 열 우선 (column-major),
 	// Assimp의 행렬은 행 우선(row-major) 행렬이기에 전치한다.
 
+	// 메쉬 생성
 	CreateMesh(model, srcNode, node);
 
-	node->m_children.resize(srcNode->mNumChildren);
+	// 노드에 애니메이션 연결
+	if (m_animation != nullptr)
+	{
+		for (auto& nodeAnim : m_animation->m_nodeAnimations)
+		{
+			if (nodeAnim->m_name.compare(node->m_name) == 0)
+			{
+				node->m_pNodeAnimation = nodeAnim;
+				break;
+			}
+		}
+	}
+
+	//node->m_children.resize(srcNode->mNumChildren);
 	for (UINT i = 0; i < srcNode->mNumChildren; i++)
 		node->m_children.push_back(CreateNode(model, srcNode->mChildren[i], node));
 
@@ -176,8 +190,11 @@ void ModelLoader::CreateMesh(shared_ptr<Model> model, aiNode* srcNode, shared_pt
 	for (UINT i = 0; i < srcNode->mNumMeshes; i++)
 	{
 		UINT index = srcNode->mMeshes[i];
+		node->m_meshIndices[i] = index;
+
 		const aiMesh* srcMesh = m_scene->mMeshes[index];
 
+		// Mesh와 Node 의 WorldMatrix 를 연결
 		mesh->m_nodeWorld = &node->m_world;
 
 		mesh->m_materialIndex = srcMesh->mMaterialIndex;
