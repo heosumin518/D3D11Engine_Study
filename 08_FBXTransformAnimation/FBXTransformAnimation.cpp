@@ -26,11 +26,11 @@ void FBXTransformAnimation::Initialize()
 	GameProcessor::CreateBlendState();
 
 	GameProcessor::CreateVertexShader();
-	CreateInputLayout();
 	GameProcessor::CreatePixelShader();
+	CreateInputLayout();
 
-	CreateConstantBuffer();
 	GameProcessor::CreateSamplerState();
+	CreateConstantBuffer();
 
 	GameProcessor::InitImGUI();
 
@@ -49,7 +49,7 @@ void FBXTransformAnimation::Update()
 	// update camera
 	{
 		m_eye = XMVectorSet(m_cameraPos[0], m_cameraPos[1], m_cameraPos[2], 0.f);
-		m_at = XMVectorSet(m_cameraPos[0], m_cameraPos[1] + 1.f, 100.f, 0.f);
+		m_at = XMVectorSet(0.f, 0.f, 1.f, 0.f);
 		m_up = XMVectorSet(0.f, 1.f, 0.f, 0.f);
 
 		m_view = XMMatrixLookAtLH(m_eye, m_at, m_up);		// ViewTransform 행렬 구하기. XMMatrixLookToLH() 함수로도 구할 수 있음
@@ -137,8 +137,8 @@ void FBXTransformAnimation::Render()
 			else
 				m_deviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
 
-			m_cbTransform.world *= XMMatrixTranspose(m_model->GetMeshes()[i]->GetNodeWorldMatrix());
-			m_deviceContext->UpdateSubresource(m_pTransformBuffer.Get(), 0, nullptr, &m_cbTransform, 0, 0);
+			//m_cbTransform.world = XMMatrixTranspose(m_world) * XMMatrixTranspose(m_model->GetMeshes()[i]->GetNodeWorldMatrix());
+			//m_deviceContext->UpdateSubresource(m_pTransformBuffer.Get(), 0, nullptr, &m_cbTransform, 0, 0);
 			m_deviceContext->UpdateSubresource(m_pBoolBuffer.Get(), 0, nullptr, &m_cbBool, 0, 0);
 
 			m_deviceContext->IASetIndexBuffer(m_model->GetMeshes()[i]->GetIndexBuffer().Get(), DXGI_FORMAT_R16_UINT, 0);
@@ -146,8 +146,8 @@ void FBXTransformAnimation::Render()
 			(
 				0, 1,
 				m_model->GetMeshes()[i]->GetVertexBuffer().GetAddressOf(),
-				&m_model->GetMeshes()[i]->GetVertexBufferStride(),
-				&m_model->GetMeshes()[i]->GetVertexBufferOffset()
+				m_model->GetMeshes()[i]->GetVertexBufferStride(),
+				m_model->GetMeshes()[i]->GetVertexBufferOffset()
 			);
 
 			m_deviceContext->DrawIndexed(m_model->GetMeshes()[i]->GetIndexCount(), 0, 0);

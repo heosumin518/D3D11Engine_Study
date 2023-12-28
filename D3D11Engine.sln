@@ -25,6 +25,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{47281029
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "08_FBXTransformAnimation", "08_FBXTransformAnimation\08_FBXTransformAnimation.vcxproj", "{D0289976-E381-47BD-8C15-AFF129D91FEE}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "08_FBXMeshAnimation", "08_FBXMeshAnimation\08_FBXMeshAnimation.vcxproj", "{EB243257-9EED-448D-94B9-962848643FFB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -113,6 +115,14 @@ Global
 		{D0289976-E381-47BD-8C15-AFF129D91FEE}.Release|x64.Build.0 = Release|x64
 		{D0289976-E381-47BD-8C15-AFF129D91FEE}.Release|x86.ActiveCfg = Release|Win32
 		{D0289976-E381-47BD-8C15-AFF129D91FEE}.Release|x86.Build.0 = Release|Win32
+		{EB243257-9EED-448D-94B9-962848643FFB}.Debug|x64.ActiveCfg = Debug|x64
+		{EB243257-9EED-448D-94B9-962848643FFB}.Debug|x64.Build.0 = Debug|x64
+		{EB243257-9EED-448D-94B9-962848643FFB}.Debug|x86.ActiveCfg = Debug|Win32
+		{EB243257-9EED-448D-94B9-962848643FFB}.Debug|x86.Build.0 = Debug|Win32
+		{EB243257-9EED-448D-94B9-962848643FFB}.Release|x64.ActiveCfg = Release|x64
+		{EB243257-9EED-448D-94B9-962848643FFB}.Release|x64.Build.0 = Release|x64
+		{EB243257-9EED-448D-94B9-962848643FFB}.Release|x86.ActiveCfg = Release|Win32
+		{EB243257-9EED-448D-94B9-962848643FFB}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

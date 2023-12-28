@@ -28,8 +28,8 @@ public:
 	Matrix GetNodeWorldMatrix() const { return *m_nodeWorld; }
 	ComPtr<ID3D11Buffer> GetVertexBuffer() { return m_vertexBuffer; }
 	ComPtr<ID3D11Buffer> GetIndexBuffer() { return m_indexBuffer; }
-	UINT& GetVertexBufferStride() { return m_vertexBufferStride; }
-	UINT& GetVertexBufferOffset() { return m_vertexBufferOffset; }
+	UINT* GetVertexBufferStride() { return &m_vertexBufferStride; }
+	UINT* GetVertexBufferOffset() { return &m_vertexBufferOffset; }
 	UINT GetIndexCount() { return m_indexCount; }
 
 public:
