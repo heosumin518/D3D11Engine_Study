@@ -7,6 +7,7 @@ class Model;
 class Mesh;
 class Material;
 class Animation;
+class NodeAnimation;
 
 class ModelLoader
 {
@@ -18,7 +19,8 @@ public:
 	void CreateNode(shared_ptr<Model> model, aiNode* srcNode, shared_ptr<Node> parent);
 	void CreateMesh(aiNode* node, shared_ptr<Node> connectNode);
 	void CreateMaterial();
-	void CreateAnimation(aiAnimation* srcAnim);
+	void CreateAnimation(aiAnimation* srcAnim, shared_ptr<Model> model);
+	shared_ptr<NodeAnimation> ParseAnimationNode(shared_ptr<Animation> animation, shared_ptr<>d_ptr<Node> node);
 
 private:
 	ComPtr<ID3D11Device> m_device;

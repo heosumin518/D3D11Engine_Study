@@ -5,6 +5,7 @@
 #include "Node.h"
 #include "Material.h"
 #include "Animation.h"
+#include "NodeAnimation.h"
 
 ModelLoader::ModelLoader(ComPtr<ID3D11Device> device)
 	: m_device(device)
@@ -34,7 +35,7 @@ shared_ptr<Model> ModelLoader::LoadModelFile(const string& file)
 	CreateNode(model, m_scene->mRootNode, nullptr);
 
 	if (m_scene->HasAnimations())
-		CreateAnimation(m_scene->mAnimations[0]);
+		CreateAnimation(m_scene->mAnimations[0], model);
 
 	model->m_meshes = m_meshes;
 	model->m_materials = m_materials;
@@ -185,9 +186,29 @@ void ModelLoader::CreateMaterial()
 
 }
 
-void ModelLoader::CreateAnimation(aiAnimation* srcAnim)
+void ModelLoader::CreateAnimation(aiAnimation* srcAnim, shared_ptr<Model> model)
 {
 	shared_ptr<Animation> animation = make_shared<Animation>();
 
-	
+	animation->m_name = srcAnim->mName.C_Str();
+	animation->m_frameRate = static_cast<float>(srcAnim->mTicksPerSecond);
+	animation->m_frameCount = static_cast<unsigned int>(srcAnim->mDuration + 1);
+
+	// 노드 개수만큼 애니메이션 가져오기
+	for (UINT i = 0; i < srcAnim->mNumChannels; i++)
+	{
+		aiNodeAnim* node = srcAnim->mChannels[i];
+
+		// 애니메이션 노드 데이터 파싱
+		shared_ptr<NodeAnimation> nodeAnim = ParseAnimationNode(animation, node);
+		animation->m_nodeAnimations.push_back(nodeAnim);
+
+		// 이름이 맞는 노드를 찾아서 해당 노드에 애니메이션 등록
+		for (UINT i = 0; i < model)
+	}
+}
+
+shared_ptr<NodeAnimation> ModelLoader::ParseAnimationNode(shared_ptr<Animation> animation, shared_ptr<> node)
+{
+
 }

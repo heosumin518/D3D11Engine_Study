@@ -23,7 +23,6 @@ private:
 
 	vector<shared_ptr<Material>> m_materials;
 	vector<shared_ptr<Mesh>> m_meshes;
-
 	shared_ptr<Node> m_rootNode;
 };
 
