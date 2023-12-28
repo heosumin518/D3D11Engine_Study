@@ -6,6 +6,7 @@ class Node;
 class Model;
 class Mesh;
 class Material;
+class Animation;
 
 class ModelLoader
 {
@@ -30,5 +31,6 @@ private:
 	vector<shared_ptr<Node>> m_nodes;
 	vector<shared_ptr<Mesh>> m_meshes;
 	vector<shared_ptr<Material>> m_materials;
+	shared_ptr<Animation> m_animation;
 };
 

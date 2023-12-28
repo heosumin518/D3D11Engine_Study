@@ -4,6 +4,7 @@
 #include "Mesh.h"
 #include "Node.h"
 #include "Material.h"
+#include "Animation.h"
 
 ModelLoader::ModelLoader(ComPtr<ID3D11Device> device)
 	: m_device(device)
@@ -54,7 +55,7 @@ void ModelLoader::CreateNode(shared_ptr<Model> model, aiNode* srcNode, shared_pt
 												// Assimp의 행렬은 행 우선(row-major) 행렬이기에 전치한다.
 
 	if (parent != nullptr)
-		node->m_parent = parent;
+		node->SetParentNode(parent);
 	else
 		model->m_rootNode = node;
 
@@ -182,4 +183,11 @@ void ModelLoader::CreateMaterial()
 		m_materials.push_back(material);	
 	}
 
+}
+
+void ModelLoader::CreateAnimation(aiAnimation* srcAnim)
+{
+	shared_ptr<Animation> animation = make_shared<Animation>();
+
+	
 }
