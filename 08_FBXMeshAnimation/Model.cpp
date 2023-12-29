@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Model.h"
+#include "Node.h"
 
 Model::Model()
 {
@@ -9,6 +10,11 @@ Model::Model()
 Model::~Model()
 {
 	
+}
+
+void Model::Update(float deltaTime)
+{
+	m_rootNode->Update(deltaTime);
 }
 
 //void Model::Render(ComPtr<ID3D11DeviceContext> deviceContext)

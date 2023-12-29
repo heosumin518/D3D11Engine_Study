@@ -3,8 +3,6 @@
 #include "Material.h"
 #include "ModelLoader.h"
 
-/// Bone, Mesh, Material을 가지고 있다.
-
 class Model
 {
 public:
@@ -12,6 +10,7 @@ public:
 	~Model();
 
 public:
+	void Update(float deltaTime);
 	void Render(ComPtr<ID3D11DeviceContext> deviceContext);
 
 public:
@@ -23,6 +22,8 @@ private:
 
 	vector<shared_ptr<Material>> m_materials;
 	vector<shared_ptr<Mesh>> m_meshes;
+	vector<shared_ptr<Node>> m_nodes;
 	shared_ptr<Node> m_rootNode;
+	shared_ptr<Animation> m_animation;
 };
 

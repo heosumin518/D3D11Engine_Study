@@ -31,7 +31,8 @@ void FBXMeshAnimation::Initialize()
 
 	// fbx 파일 로드하여 모델 생성
 	ModelLoader loader(m_device);
-	m_models.push_back(loader.LoadModelFile("../Resources/GOSEGU.fbx"));
+	m_model = loader.LoadModelFile("../Resources/dummy_walk_test_1023.fbx");
+	//m_models.push_back(loader.LoadModelFile("../Resources/GOSEGU.fbx"));
 	//m_models.push_back(loader.LoadModelFile("../Resources/zeldaPosed001.fbx"));
 	//m_models.push_back(loader.LoadModelFile("../Resources/Character.fbx"));
 
@@ -43,7 +44,7 @@ void FBXMeshAnimation::Update()
 {
 	GameProcessor::Update();
 
-	auto t = m_timer.TotalTime();
+	auto deltaTime = m_timer.DeltaTime();
 
 	// update camera
 	{
@@ -71,6 +72,8 @@ void FBXMeshAnimation::Update()
 	{
 		m_CBLight.eyePos = m_cameraPos;
 	}
+
+	m_model->Update(deltaTime);
 }
 
 void FBXMeshAnimation::Render()
@@ -114,46 +117,46 @@ void FBXMeshAnimation::Render()
 		//m_deviceContext->DrawIndexed(m_indices.size(), 0, 0);
 	}
 
-	for(const auto& model : m_models)
-	{
-		//model->Render(m_deviceContext);
+	//for(const auto& model : m_models)
+	//{
+	//	//model->Render(m_deviceContext);
 
-		for (size_t i = 0; i < model->GetMeshes().size(); i++)
-		{
-			size_t mi = model->GetMeshes()[i]->GetMaterialIndex();
+	//	for (size_t i = 0; i < model->GetMeshes().size(); i++)
+	//	{
+	//		size_t mi = model->GetMeshes()[i]->GetMaterialIndex();
 
-			m_deviceContext->PSSetShaderResources(0, 1, model->GetMaterials()[mi]->GetDiffuseRV().GetAddressOf());
-			m_deviceContext->PSSetShaderResources(1, 1, model->GetMaterials()[mi]->GetNormalRV().GetAddressOf());
-			m_deviceContext->PSSetShaderResources(2, 1, model->GetMaterials()[mi]->GetSpecularRV().GetAddressOf());
-			m_deviceContext->PSSetShaderResources(3, 1, model->GetMaterials()[mi]->GetEmissiveRV().GetAddressOf());
-			m_deviceContext->PSSetShaderResources(4, 1, model->GetMaterials()[mi]->GetOpacityRV().GetAddressOf());
+	//		m_deviceContext->PSSetShaderResources(0, 1, model->GetMaterials()[mi]->GetDiffuseRV().GetAddressOf());
+	//		m_deviceContext->PSSetShaderResources(1, 1, model->GetMaterials()[mi]->GetNormalRV().GetAddressOf());
+	//		m_deviceContext->PSSetShaderResources(2, 1, model->GetMaterials()[mi]->GetSpecularRV().GetAddressOf());
+	//		m_deviceContext->PSSetShaderResources(3, 1, model->GetMaterials()[mi]->GetEmissiveRV().GetAddressOf());
+	//		m_deviceContext->PSSetShaderResources(4, 1, model->GetMaterials()[mi]->GetOpacityRV().GetAddressOf());
 
-			m_CBMaterial.useDiffuseMap = model->GetMaterials()[mi]->GetDiffuseRV() != nullptr ? true : false;
-			m_CBMaterial.useNormalMap = model->GetMaterials()[mi]->GetNormalRV() != nullptr ? true : false;
-			m_CBMaterial.useSpecularMap = model->GetMaterials()[mi]->GetSpecularRV() != nullptr ? true : false;
-			m_CBMaterial.useEmissiveMap = model->GetMaterials()[mi]->GetEmissiveRV() != nullptr ? true : false;
-			m_CBMaterial.useOpacityMap = model->GetMaterials()[mi]->GetOpacityRV() != nullptr ? true : false;
+	//		m_CBMaterial.useDiffuseMap = model->GetMaterials()[mi]->GetDiffuseRV() != nullptr ? true : false;
+	//		m_CBMaterial.useNormalMap = model->GetMaterials()[mi]->GetNormalRV() != nullptr ? true : false;
+	//		m_CBMaterial.useSpecularMap = model->GetMaterials()[mi]->GetSpecularRV() != nullptr ? true : false;
+	//		m_CBMaterial.useEmissiveMap = model->GetMaterials()[mi]->GetEmissiveRV() != nullptr ? true : false;
+	//		m_CBMaterial.useOpacityMap = model->GetMaterials()[mi]->GetOpacityRV() != nullptr ? true : false;
 
-			if (m_CBMaterial.useOpacityMap)
-			{
-				m_deviceContext->OMSetBlendState(m_blendState.Get(), nullptr, 0xffffffff);  // 알파블렌드 상태설정 , 다른옵션은 기본값
-				int a = 1;
-				a = 54;
-			}
-			else
-				m_deviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);		// 설정해제, 다른옵션은 기본값
+	//		if (m_CBMaterial.useOpacityMap)
+	//		{
+	//			m_deviceContext->OMSetBlendState(m_blendState.Get(), nullptr, 0xffffffff);  // 알파블렌드 상태설정 , 다른옵션은 기본값
+	//			int a = 1;
+	//			a = 54;
+	//		}
+	//		else
+	//			m_deviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);		// 설정해제, 다른옵션은 기본값
 
-			m_deviceContext->UpdateSubresource(m_CBMaterialBuffer.Get(), 0, nullptr, &m_CBMaterial, 0, 0);
-			m_deviceContext->IASetIndexBuffer(model->GetMeshes()[i]->GetIndexBuffer().Get(), DXGI_FORMAT_R16_UINT, 0);
-			m_deviceContext->IASetVertexBuffers(
-				0, 1,
-				model->GetMeshes()[i]->GetVertexBuffer().GetAddressOf(),
-				model->GetMeshes()[i]->GetVertexBufferStride(),
-				model->GetMeshes()[i]->GetVertexBufferOffset()
-			);
-			m_deviceContext->DrawIndexed(model->GetMeshes()[i]->GetIndexCount(), 0, 0);
-		}
-	}
+	//		m_deviceContext->UpdateSubresource(m_CBMaterialBuffer.Get(), 0, nullptr, &m_CBMaterial, 0, 0);
+	//		m_deviceContext->IASetIndexBuffer(model->GetMeshes()[i]->GetIndexBuffer().Get(), DXGI_FORMAT_R16_UINT, 0);
+	//		m_deviceContext->IASetVertexBuffers(
+	//			0, 1,
+	//			model->GetMeshes()[i]->GetVertexBuffer().GetAddressOf(),
+	//			model->GetMeshes()[i]->GetVertexBufferStride(),
+	//			model->GetMeshes()[i]->GetVertexBufferOffset()
+	//		);
+	//		m_deviceContext->DrawIndexed(model->GetMeshes()[i]->GetIndexCount(), 0, 0);
+	//	}
+	//}
 
 	RenderImGUI();
 

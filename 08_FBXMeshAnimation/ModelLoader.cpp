@@ -35,10 +35,12 @@ shared_ptr<Model> ModelLoader::LoadModelFile(const string& file)
 	CreateNode(model, m_scene->mRootNode, nullptr);
 
 	if (m_scene->HasAnimations())
-		CreateAnimation(m_scene->mAnimations[0], model);
+		CreateAnimation(m_scene->mAnimations[0]);
 
+	model->m_nodes = m_nodes;
 	model->m_meshes = m_meshes;
 	model->m_materials = m_materials;
+	model->m_animation = m_animation;
 
 	m_importer->FreeScene();
 
@@ -76,9 +78,6 @@ void ModelLoader::CreateMesh(aiNode* node, shared_ptr<Node> connectNode)
 		return;
 
 	shared_ptr<Mesh> mesh = make_shared<Mesh>();
-
-	// Mesh와 Node 의 WorldMatrix 를 연결한다.
-	mesh->m_pNodeWorld = &connectNode->m_world;
 
 	for (UINT i = 0; i < node->mNumMeshes; i++)
 	{
@@ -121,6 +120,9 @@ void ModelLoader::CreateMesh(aiNode* node, shared_ptr<Node> connectNode)
 
 		mesh->m_materialIndex = srcMesh->mMaterialIndex;
 	}
+
+	// 노드에 메쉬 연결
+	connectNode->m_mesh = mesh;
 
 	m_meshes.push_back(mesh);
 }
@@ -186,7 +188,7 @@ void ModelLoader::CreateMaterial()
 
 }
 
-void ModelLoader::CreateAnimation(aiAnimation* srcAnim, shared_ptr<Model> model)
+void ModelLoader::CreateAnimation(aiAnimation* srcAnim)
 {
 	shared_ptr<Animation> animation = make_shared<Animation>();
 
@@ -204,11 +206,51 @@ void ModelLoader::CreateAnimation(aiAnimation* srcAnim, shared_ptr<Model> model)
 		animation->m_nodeAnimations.push_back(nodeAnim);
 
 		// 이름이 맞는 노드를 찾아서 해당 노드에 애니메이션 등록
-		for (UINT i = 0; i < model)
+		for (UINT i = 0; i < m_nodes.size(); i++)
+		{
+			if (m_nodes[i]->m_name == nodeAnim->m_name)
+				m_nodes[i]->m_nodeAnim = nodeAnim;
+		}
 	}
+
+	m_animation = animation;
 }
 
-shared_ptr<NodeAnimation> ModelLoader::ParseAnimationNode(shared_ptr<Animation> animation, shared_ptr<> node)
+shared_ptr<NodeAnimation> ModelLoader::ParseAnimationNode(shared_ptr<Animation> animation, aiNodeAnim* srcNodeAnim)
 {
+	shared_ptr<NodeAnimation> nodeAnim = make_shared<NodeAnimation>();
+	nodeAnim->m_frameCount = animation->m_frameCount;
+	nodeAnim->m_frameRate = animation->m_frameRate;
+	nodeAnim->m_name = srcNodeAnim->mNodeName.C_Str();
 
+	for (UINT i = 0; i < srcNodeAnim->mNumPositionKeys; i++)
+	{
+		KeyFrameData key;
+
+		aiVectorKey& position = srcNodeAnim->mPositionKeys[i];
+		aiQuatKey& rotation = srcNodeAnim->mRotationKeys[i];
+		aiVectorKey& scale = srcNodeAnim->mScalingKeys[i];
+
+		assert(position.mTime == rotation.mTime);
+		assert(rotation.mTime == scale.mTime);
+
+		key.time = position.mTime;
+		key.translation = Vector3(position.mValue.x, position.mValue.y, position.mValue.z);
+		key.rotation = Quaternion(rotation.mValue.x, rotation.mValue.y, rotation.mValue.z, rotation.mValue.w);
+		key.scale = Vector3(scale.mValue.x, scale.mValue.y, scale.mValue.z);
+
+		nodeAnim->m_keyFrameBox.push_back(key);
+	}
+
+	// Keyframe 늘려주기
+	if (nodeAnim->m_keyFrameBox.size() < animation->m_frameCount)
+	{
+		unsigned int count = animation->m_frameCount - nodeAnim->m_keyFrameBox.size();
+		KeyFrameData key = nodeAnim->m_keyFrameBox.back();
+
+		for (UINT i = 0; i < count; i++)
+			nodeAnim->m_keyFrameBox.push_back(key);
+	}
+
+	return nodeAnim;
 }

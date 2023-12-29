@@ -19,8 +19,8 @@ public:
 	void CreateNode(shared_ptr<Model> model, aiNode* srcNode, shared_ptr<Node> parent);
 	void CreateMesh(aiNode* node, shared_ptr<Node> connectNode);
 	void CreateMaterial();
-	void CreateAnimation(aiAnimation* srcAnim, shared_ptr<Model> model);
-	shared_ptr<NodeAnimation> ParseAnimationNode(shared_ptr<Animation> animation, shared_ptr<>d_ptr<Node> node);
+	void CreateAnimation(aiAnimation* srcAnim);
+	shared_ptr<NodeAnimation> ParseAnimationNode(shared_ptr<Animation> animation, aiNodeAnim* srcNodeAnim);
 
 private:
 	ComPtr<ID3D11Device> m_device;

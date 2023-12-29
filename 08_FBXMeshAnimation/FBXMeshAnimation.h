@@ -80,7 +80,7 @@ private:
 	CB_Material m_CBMaterial;
 
 	// FBX
-	vector<shared_ptr<Model>> m_models;		// 가지고 있는 모델들
+	shared_ptr<Model> m_model;		// 가지고 있는 모델
 
 
 	// ImGUI 로 조절할 camera 변수 목록

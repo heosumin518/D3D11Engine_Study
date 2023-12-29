@@ -31,8 +31,6 @@ private:
 	friend ModelLoader;
 	friend Model;
 
-	Matrix* m_pNodeWorld;
-
 	ComPtr<ID3D11Buffer> m_vertexBuffer;
 	ComPtr<ID3D11Buffer> m_indexBuffer;
 
