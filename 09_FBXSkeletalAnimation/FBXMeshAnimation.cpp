@@ -31,7 +31,7 @@ void FBXMeshAnimation::Initialize()
 
 	// fbx 파일 로드하여 모델 생성
 	ModelLoader loader(m_device);
-	m_model = loader.LoadModelFile("../Resources/GOSEGU.fbx"); // dummy_walk_test_1023
+	m_model = loader.LoadModelFile("../Resources/dummy_walk_test_1023.fbx"); // GOSEGU
 
 
 	GameProcessor::InitImGUI();
