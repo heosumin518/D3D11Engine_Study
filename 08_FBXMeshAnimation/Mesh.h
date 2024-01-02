@@ -1,5 +1,6 @@
 #pragma once
 #include "ModelLoader.h"
+#include "Node.h"
 
 struct Vertex
 {
@@ -27,6 +28,8 @@ public:
 	ComPtr<ID3D11Buffer> GetIndexBuffer() { return m_indexBuffer; }
 	ComPtr<ID3D11Buffer> GetVertexBuffer() { return m_vertexBuffer; }
 
+	Matrix GetNodeTransform() { return m_connectedNode->m_world; }
+
 private:
 	friend ModelLoader;
 	friend Model;
@@ -40,5 +43,7 @@ private:
 	UINT m_indexCount = 0;			// 인덱스 개수
 	UINT m_materialIndex = 0;		// 머터리얼 인덱스
 
+	// ..
+	shared_ptr<Node> m_connectedNode;
 };
 

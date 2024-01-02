@@ -20,8 +20,8 @@ void GameProcessor::Initialize()
 void GameProcessor::Update()
 {
 	// 시간 업데이트
-	m_timer.Tick();
-
+	//m_timer.Tick();
+	TIME->Update();
 }
 
 void GameProcessor::RenderBegin()

@@ -160,6 +160,7 @@
     <ClInclude Include="Helper.h" />
     <ClInclude Include="GameProcessor.h" />
     <ClInclude Include="Structs.h" />
+    <ClInclude Include="TimeManager.h" />
     <ClInclude Include="TimeSystem.h" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="Values.h" />
@@ -170,6 +171,7 @@
     <ClCompile Include="Helper.cpp" />
     <ClCompile Include="Crow.cpp" />
     <ClCompile Include="GameProcessor.cpp" />
+    <ClCompile Include="TimeManager.cpp" />
     <ClCompile Include="TimeSystem.cpp" />
     <ClCompile Include="WinApp.cpp" />
     <ClCompile Include="pch.cpp">

@@ -124,6 +124,7 @@ void ModelLoader::CreateMesh(aiNode* node, shared_ptr<Node> connectNode)
 	// 노드에 메쉬 연결
 	connectNode->m_mesh = mesh;
 
+	mesh->m_connectedNode = connectNode;
 	m_meshes.push_back(mesh);
 }
 

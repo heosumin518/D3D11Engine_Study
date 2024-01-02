@@ -52,6 +52,19 @@ using namespace Microsoft::WRL;
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 
+#define DECLARE_SINGLE(classname)			\
+private:									\
+	classname() { }							\
+public:										\
+	static classname* GetInstance()			\
+	{										\
+		static classname s_instance;		\
+		return &s_instance;					\
+	}
+
+#define GET_SINGLE(classname)	classname::GetInstance()
+#define TIME		GET_SINGLE(TimeManager)
+#define DT			TIME->GetDeltaTime()
 
 #include "Types.h"
 #include "Values.h"
@@ -59,5 +72,8 @@ using namespace Microsoft::WRL;
 #include "Helper.h"
 
 #include "TimeSystem.h"
+#include "TimeManager.h"
+
+
 
 #endif //PCH_H
