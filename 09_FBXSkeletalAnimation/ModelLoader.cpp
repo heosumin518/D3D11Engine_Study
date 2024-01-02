@@ -106,6 +106,7 @@ void ModelLoader::CreateMesh(aiNode* node, shared_ptr<Node> connectNode)
 
 			vertices.push_back(vertex);
 		}
+		/// TODO : 여기서 본정보 가져와서 본 버텍스 버퍼 만들기
 		mesh->CreateVertexBuffer(m_device, vertices);
 
 		// 인덱스 정보 생성
