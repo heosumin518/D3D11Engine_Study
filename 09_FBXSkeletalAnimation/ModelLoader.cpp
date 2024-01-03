@@ -3,6 +3,7 @@
 #include "Model.h"
 #include "Mesh.h"
 #include "Node.h"
+#include "Bone.h"
 #include "Material.h"
 #include "Animation.h"
 #include "NodeAnimation.h"
@@ -37,6 +38,7 @@ shared_ptr<Model> ModelLoader::LoadModelFile(const string& file)
 	if (m_scene->HasAnimations())
 		CreateAnimation(m_scene->mAnimations[0]);
 
+	model->m_bones = m_bones;
 	model->m_nodes = m_nodes;
 	model->m_meshes = m_meshes;
 	model->m_materials = m_materials;
@@ -83,13 +85,14 @@ void ModelLoader::CreateMesh(aiNode* node, shared_ptr<Node> connectNode)
 	{
 		UINT index = node->mMeshes[i];
 		const aiMesh* srcMesh = m_scene->mMeshes[index];
+		mesh->m_name = srcMesh->mName.C_Str();
 
 		// 버텍스 정보 생성
-		vector<Vertex> vertices;
+		vector<BoneWeightVertex> vertices;
 		for (UINT v = 0; v < srcMesh->mNumVertices; v++)
 		{
 			// Vertex
-			Vertex vertex;
+			BoneWeightVertex vertex;
 			::memcpy(&vertex.position, &srcMesh->mVertices[v], sizeof(srcMesh->mVertices[v]));
 
 			// UV
@@ -106,7 +109,49 @@ void ModelLoader::CreateMesh(aiNode* node, shared_ptr<Node> connectNode)
 
 			vertices.push_back(vertex);
 		}
-		/// TODO : 여기서 본정보 가져와서 본 버텍스 버퍼 만들기
+
+		// 메시 본 가져오기
+		if (srcMesh->HasBones())
+		{
+			// 메쉬와 연결된 본들을 처리
+			UINT boneIndexCounter = 0;
+			map<string, int> boneMapping;
+
+			// 본 갯수만큼 본 생성
+			for (UINT i = 0; i < srcMesh->mNumBones; i++)
+			{
+				aiBone* srcBone = srcMesh->mBones[i];
+				UINT boneIndex = 0;
+
+				// 매핑이 아직 안되어있다면
+				if (boneMapping.find(srcBone->mName.C_Str()) == boneMapping.end())
+				{
+					shared_ptr<Bone> bone = make_shared<Bone>();
+
+					// Map bone name to bone Index
+					boneIndex = boneIndexCounter;
+					boneIndexCounter++;
+
+					bone->name = srcBone->mName.C_Str();
+					bone->numWeights = srcBone->mNumWeights;
+					bone->offsetMatrix = Matrix(&srcBone->mOffsetMatrix.a1).Transpose();
+
+					for (auto& node : m_nodes)
+					{
+						if (node->m_name == bone->name)
+						{
+							/// TODO 23.01.03 여기 하던중임.
+
+						}
+					}
+
+				}
+				else
+					boneIndex = boneMapping[srcBone->mName.C_Str()];
+			}
+
+		}
+
 		mesh->CreateVertexBuffer(m_device, vertices);
 
 		// 인덱스 정보 생성

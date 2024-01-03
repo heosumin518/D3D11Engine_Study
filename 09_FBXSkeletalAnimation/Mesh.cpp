@@ -9,9 +9,9 @@ Mesh::~Mesh()
 {
 }
 
-void Mesh::CreateVertexBuffer(ComPtr<ID3D11Device> device, vector<Vertex>& vertices)
+void Mesh::CreateVertexBuffer(ComPtr<ID3D11Device> device, vector<BoneWeightVertex>& vertices)
 {
-	m_vertexBufferStride = sizeof(Vertex);
+	m_vertexBufferStride = sizeof(BoneWeightVertex);
 	m_vertexBufferOffset = 0;
 	m_vertexCount = vertices.size();
 

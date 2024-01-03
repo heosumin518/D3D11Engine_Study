@@ -1,19 +1,19 @@
 #include "pch.h"
-#include "FBXMeshAnimation.h"
+#include "FBXSkeletalAnimation.h"
 #include "ModelLoader.h"
 
-FBXMeshAnimation::FBXMeshAnimation(const int32& width, const int32& height, const std::wstring& name)
+FBXSkeletalAnimation::FBXSkeletalAnimation(const int32& width, const int32& height, const std::wstring& name)
 	: GameProcessor(width, height, name)
 {
 
 }
 
-FBXMeshAnimation::~FBXMeshAnimation()
+FBXSkeletalAnimation::~FBXSkeletalAnimation()
 {
 	GameProcessor::UnInitImGUI();
 }
 
-void FBXMeshAnimation::Initialize()
+void FBXSkeletalAnimation::Initialize()
 {
 	GameProcessor::CreateDeviceAndSwapChain();
 	GameProcessor::CreateRenderTargetView();
@@ -31,13 +31,13 @@ void FBXMeshAnimation::Initialize()
 
 	// fbx 파일 로드하여 모델 생성
 	ModelLoader loader(m_device);
-	m_model = loader.LoadModelFile("../Resources/dummy_walk_test_1023.fbx"); // GOSEGU
+	m_model = loader.LoadModelFile("../Resources/GOSEGU.fbx"); // dummy_walk_test_1023
 
 
 	GameProcessor::InitImGUI();
 }
 
-void FBXMeshAnimation::Update()
+void FBXSkeletalAnimation::Update()
 {
 	GameProcessor::Update();
 
@@ -73,7 +73,7 @@ void FBXMeshAnimation::Update()
 	m_model->Update(deltaTime);
 }
 
-void FBXMeshAnimation::Render()
+void FBXSkeletalAnimation::Render()
 {
 	RenderBegin();
 
@@ -81,7 +81,7 @@ void FBXMeshAnimation::Render()
 
 	// IA - VS - RS - PS - OM
 	{
-		uint32 stride = sizeof(Vertex);
+		uint32 stride = sizeof(BoneWeightVertex);
 		uint32 offset = 0;
 
 		// IA
@@ -156,7 +156,7 @@ void FBXMeshAnimation::Render()
 	RenderEnd();
 }
 
-void FBXMeshAnimation::RenderImGUI()
+void FBXSkeletalAnimation::RenderImGUI()
 {
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
@@ -260,7 +260,7 @@ void FBXMeshAnimation::RenderImGUI()
 
 
 // Render() 에서 파이프라인에 바인딩할 InputLayout 생성 
-void FBXMeshAnimation::CreateInputLayout()
+void FBXSkeletalAnimation::CreateInputLayout()
 {
 	D3D11_INPUT_ELEMENT_DESC layout[] =  // 인풋 레이아웃은 버텍스 쉐이더가 입력받을 데이터의 형식을 지정한다.
 	{
@@ -275,7 +275,7 @@ void FBXMeshAnimation::CreateInputLayout()
 	HR_T(m_device->CreateInputLayout(layout, count, m_vsBlob->GetBufferPointer(), m_vsBlob->GetBufferSize(), m_inputLayout.GetAddressOf()));
 }
 
-void FBXMeshAnimation::CreateConstantBuffer()
+void FBXSkeletalAnimation::CreateConstantBuffer()
 {
 	// Transform 상수 버퍼 정보 생성
 	D3D11_BUFFER_DESC CBTransformDesc;

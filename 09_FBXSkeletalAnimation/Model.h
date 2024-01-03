@@ -20,10 +20,11 @@ public:
 private:
 	friend ModelLoader;
 
-	vector<shared_ptr<Material>> m_materials;
-	vector<shared_ptr<Mesh>> m_meshes;
-	vector<shared_ptr<Node>> m_nodes;
 	shared_ptr<Node> m_rootNode;
+	vector<shared_ptr<Node>> m_nodes;
+	vector<shared_ptr<Bone>> m_bones;
+	vector<shared_ptr<Mesh>> m_meshes;
 	shared_ptr<Animation> m_animation;
+	vector<shared_ptr<Material>> m_materials;
 };
 

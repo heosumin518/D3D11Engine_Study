@@ -2,9 +2,10 @@
 #include <filesystem>
 // FBX 파일로부터 정보를 로드하여 Model 객체에 넘겨주는 역할을 하는 클래스
 
-class Node;
-class Model;
 class Mesh;
+class Node;
+class Bone;
+class Model;
 class Material;
 class Animation;
 class NodeAnimation;
@@ -31,6 +32,7 @@ private:
 
 private:
 	vector<shared_ptr<Node>> m_nodes;
+	vector<shared_ptr<Bone>> m_bones;
 	vector<shared_ptr<Mesh>> m_meshes;
 	vector<shared_ptr<Material>> m_materials;
 	shared_ptr<Animation> m_animation;

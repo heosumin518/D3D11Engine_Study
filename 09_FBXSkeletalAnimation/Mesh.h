@@ -1,14 +1,9 @@
 #pragma once
 #include "ModelLoader.h"
 #include "Node.h"
+#include "Struct.h"
 
-struct Vertex
-{
-	Vector3 position;
-	Vector2 uv;
-	Vector3 normal;
-	Vector3 tangent;
-};
+
 
 class Mesh
 {
@@ -16,7 +11,7 @@ public:
 	Mesh();
 	~Mesh();
 
-	void CreateVertexBuffer(ComPtr<ID3D11Device> device, vector<Vertex>& vertices);
+	void CreateVertexBuffer(ComPtr<ID3D11Device> device, vector<BoneWeightVertex>& vertices);
 	void CreateIndexBuffer(ComPtr<ID3D11Device> device, vector<WORD>& indices);
 
 public:
@@ -36,6 +31,8 @@ private:
 
 	ComPtr<ID3D11Buffer> m_vertexBuffer;
 	ComPtr<ID3D11Buffer> m_indexBuffer;
+
+	string m_name;
 
 	UINT m_vertexCount = 0;
 	UINT m_vertexBufferStride = 0;	// 버텍스 하나의 크기
