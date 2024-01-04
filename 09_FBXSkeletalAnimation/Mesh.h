@@ -23,11 +23,15 @@ public:
 	ComPtr<ID3D11Buffer> GetIndexBuffer() { return m_indexBuffer; }
 	ComPtr<ID3D11Buffer> GetVertexBuffer() { return m_vertexBuffer; }
 
+	void UpdateMatrixPalette(vector<shared_ptr<Bone>> bones, Matrix* pMatrixPalette);
+
 	Matrix GetNodeTransform() { return m_connectedNode->m_world; }
 
 private:
 	friend ModelLoader;
 	friend Model;
+
+	vector<BoneWeightVertex> m_boneWeightVertices;
 
 	ComPtr<ID3D11Buffer> m_vertexBuffer;
 	ComPtr<ID3D11Buffer> m_indexBuffer;

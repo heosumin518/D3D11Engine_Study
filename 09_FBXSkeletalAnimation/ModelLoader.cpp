@@ -22,6 +22,7 @@ shared_ptr<Model> ModelLoader::LoadModelFile(const string& file)
 {
 	shared_ptr<Model> model = make_shared<Model>();
 
+	m_importer->SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, 0);	// $assimp_fbx$ 노드 생성안함
 	m_scene = m_importer->ReadFile(
 		file.c_str(),
 		aiProcess_ConvertToLeftHanded |	// DX용 왼손좌표계 변환
@@ -117,6 +118,9 @@ void ModelLoader::CreateMesh(aiNode* node, shared_ptr<Node> connectNode)
 			UINT boneIndexCounter = 0;
 			map<string, int> boneMapping;
 
+			for (int i = 0; i < m_bones.size(); i++)
+				boneMapping.insert(make_pair(m_bones[i]->name, i));
+
 			// 본 갯수만큼 본 생성
 			for (UINT i = 0; i < srcMesh->mNumBones; i++)
 			{
@@ -136,20 +140,29 @@ void ModelLoader::CreateMesh(aiNode* node, shared_ptr<Node> connectNode)
 					bone->numWeights = srcBone->mNumWeights;
 					bone->offsetMatrix = Matrix(&srcBone->mOffsetMatrix.a1).Transpose();
 
+					// 노드에 본지정 및 본에 노드 지정
 					for (auto& node : m_nodes)
 					{
 						if (node->m_name == bone->name)
 						{
 							/// TODO 23.01.03 여기 하던중임.
-
+							node->m_bone = bone;
+							bone->owner = node;
 						}
 					}
-
+					m_bones.push_back(bone);
 				}
 				else
 					boneIndex = boneMapping[srcBone->mName.C_Str()];
-			}
 
+				// 본과 연결된 버텍스들을 처리
+				for (UINT j = 0; j < srcBone->mNumWeights; j++)
+				{
+					UINT vertexID = srcBone->mWeights[j].mVertexId;
+					float weight = srcBone->mWeights[j].mWeight;
+					vertices[vertexID].AddBoneData(boneIndex, weight);
+				}
+			}
 		}
 
 		mesh->CreateVertexBuffer(m_device, vertices);

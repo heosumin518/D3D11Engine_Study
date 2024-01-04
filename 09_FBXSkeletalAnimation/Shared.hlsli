@@ -41,6 +41,11 @@ cbuffer Material : register(b2)
     float2 MaterialPad0;
 }
 
+cbuffer MatrixPalette : register(b4)
+{
+    matrix MatrixPaletteArray[128];
+}
+
 
 //--------------------------------------------------------------------------------------
 struct VS_INPUT
@@ -49,6 +54,10 @@ struct VS_INPUT
     float2 TexCoord : TEXCOORD0;
     float3 NormalModel : NORMAL;
     float3 TangentModel : TANGENT;
+
+    // Skinning
+    int4 BlendIndices : BLENDINDICES;
+    float4 BlendWeights : BLENDWEIGHTS;
 };
 
 struct PS_INPUT

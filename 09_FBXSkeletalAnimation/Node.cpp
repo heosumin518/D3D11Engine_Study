@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Node.h"
+#include "Bone.h"
 #include "Model.h"
 #include "Mesh.h"
 #include "ModelLoader.h"

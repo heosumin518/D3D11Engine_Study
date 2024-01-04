@@ -14,6 +14,7 @@ public:
 	void Render(ComPtr<ID3D11DeviceContext> deviceContext);
 
 public:
+	vector<shared_ptr<Bone>> GetBones() { return m_bones; }
 	vector<shared_ptr<Mesh>> GetMeshes() { return m_meshes; }
 	vector<shared_ptr<Material>> GetMaterials() { return m_materials; }
 

@@ -31,7 +31,7 @@ void FBXSkeletalAnimation::Initialize()
 
 	// fbx 파일 로드하여 모델 생성
 	ModelLoader loader(m_device);
-	m_model = loader.LoadModelFile("../Resources/GOSEGU.fbx"); // dummy_walk_test_1023
+	m_model = loader.LoadModelFile("../Resources/SkinningTest.fbx"); // GOSEGU
 
 
 	GameProcessor::InitImGUI();
@@ -77,7 +77,6 @@ void FBXSkeletalAnimation::Render()
 {
 	RenderBegin();
 
-	
 
 	// IA - VS - RS - PS - OM
 	{
@@ -95,6 +94,7 @@ void FBXSkeletalAnimation::Render()
 		m_deviceContext->VSSetConstantBuffers(0, 1, m_CBTransformBuffer.GetAddressOf());
 		m_deviceContext->VSSetConstantBuffers(1, 1, m_CBLightBuffer.GetAddressOf());
 		m_deviceContext->VSSetConstantBuffers(2, 1, m_CBMaterialBuffer.GetAddressOf());
+		m_deviceContext->VSSetConstantBuffers(3, 1, m_CBMatPaletteBuffer.GetAddressOf());
 
 		// RS
 
@@ -104,6 +104,7 @@ void FBXSkeletalAnimation::Render()
 		m_deviceContext->PSSetConstantBuffers(0, 1, m_CBTransformBuffer.GetAddressOf());
 		m_deviceContext->PSSetConstantBuffers(1, 1, m_CBLightBuffer.GetAddressOf());
 		m_deviceContext->PSSetConstantBuffers(2, 1, m_CBMaterialBuffer.GetAddressOf());
+		m_deviceContext->PSSetConstantBuffers(3, 1, m_CBMatPaletteBuffer.GetAddressOf());
 
 		// OM
 		// Render cube and Light
@@ -114,6 +115,7 @@ void FBXSkeletalAnimation::Render()
 		//m_deviceContext->DrawIndexed(m_indices.size(), 0, 0);
 	}
 
+	// render model
 	for (size_t i = 0; i < m_model->GetMeshes().size(); i++)
 	{
 		size_t mi = m_model->GetMeshes()[i]->GetMaterialIndex();
@@ -131,16 +133,18 @@ void FBXSkeletalAnimation::Render()
 		m_CBMaterial.useOpacityMap = m_model->GetMaterials()[mi]->GetOpacityRV() != nullptr ? true : false;
 
 		if (m_CBMaterial.useOpacityMap)
-		{
 			m_deviceContext->OMSetBlendState(m_blendState.Get(), nullptr, 0xffffffff);  // 알파블렌드 상태설정 , 다른옵션은 기본값
-		}
 		else
 			m_deviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);		// 설정해제, 다른옵션은 기본값
 
 		m_CBModel.world = m_model->GetMeshes()[i]->GetNodeTransform().Transpose() * XMMatrixTranspose(m_world);
-		m_deviceContext->UpdateSubresource(m_CBTransformBuffer.Get(), 0, nullptr, &m_CBModel, 0, 0);
 
+		m_model->GetMeshes()[i]->UpdateMatrixPalette(m_model->GetBones(), m_CBMatPalette.Array);
+
+		m_deviceContext->UpdateSubresource(m_CBMatPaletteBuffer.Get(), 0, nullptr, &m_CBMatPalette, 0, 0);
+		m_deviceContext->UpdateSubresource(m_CBTransformBuffer.Get(), 0, nullptr, &m_CBModel, 0, 0);
 		m_deviceContext->UpdateSubresource(m_CBMaterialBuffer.Get(), 0, nullptr, &m_CBMaterial, 0, 0);
+
 		m_deviceContext->IASetIndexBuffer(m_model->GetMeshes()[i]->GetIndexBuffer().Get(), DXGI_FORMAT_R16_UINT, 0);
 		m_deviceContext->IASetVertexBuffers(
 			0, 1,
@@ -165,68 +169,6 @@ void FBXSkeletalAnimation::RenderImGUI()
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
-
-	{
-	//// camera control window
-	//{
-	//	ImGui::SetNextWindowPos(ImVec2(420, 10));
-	//	ImGui::SetNextWindowSize(ImVec2(450, 150));		// 메뉴 창 크기 설정
-	//	ImGui::Begin("Camera Control Panel");
-
-	//	ImGui::Text("Adjust camera position");
-	//	ImGui::SliderFloat3("Camera (x, y, z)", reinterpret_cast<float*>(&m_cameraPos), -1000.0f, 1000.0f);
-	//	ImGui::SliderFloat("FOV", &m_cameraFOV, 0.01f, 180.0f);
-	//	ImGui::SliderFloat("Near", &m_cameraNear, 0.01f, 10.0f);
-	//	ImGui::SliderFloat("Far", &m_cameraFar, 1.f, 10500.0f);
-
-	//	ImGui::End();
-	//}
-
-	//// cube control window
-	//{
-	//	ImGui::SetNextWindowPos(ImVec2(10, 10));
-	//	ImGui::SetNextWindowSize(ImVec2(400, 150));		// 메뉴 창 크기 설정
-	//	ImGui::Begin("Cube Control Panel");
-
-	//	ImGui::Text("Rotate Cube");
-	//	ImGui::SliderFloat("X", &m_cubeRotateInfo.x, 0.f, 10.0f);
-	//	ImGui::SliderFloat("Y", &m_cubeRotateInfo.y, 0.f, 10.0f);
-	//	ImGui::SliderFloat("Z", &m_cubeRotateInfo.z, 0.f, 10.0f);
-	//	ImGui::SliderFloat("Scale", &m_modelScale, 0.f, 1000.0f);
-
-	//	ImGui::End();
-	//}
-
-	//// light control window
-	//{
-	//	ImGui::SetNextWindowPos(ImVec2(10, 170));
-	//	ImGui::SetNextWindowSize(ImVec2(400, 150));		// 메뉴 창 크기 설정
-	//	ImGui::Begin("Light Control Panel");
-
-	//	ImGui::SliderFloat3("Direction", reinterpret_cast<float*>(&m_CBLight.direction), -1.f, 1.f);
-	//	ImGui::ColorEdit4("Ambient", reinterpret_cast<float*>(&m_CBLight.ambient));
-	//	ImGui::ColorEdit4("Diffuse", reinterpret_cast<float*>(&m_CBLight.diffuse));
-	//	ImGui::ColorEdit4("Specular", reinterpret_cast<float*>(&m_CBLight.specular));
-
-	//	ImGui::End();
-	//}
-
-	//// material control window
-	//{
-	//	ImGui::SetNextWindowPos(ImVec2(1150, 10));
-	//	ImGui::SetNextWindowSize(ImVec2(400, 180));		// 메뉴 창 크기 설정
-	//	ImGui::Begin("Metarial Control Panel");
-
-	//	ImGui::Checkbox("UseNormalMap", &m_CBMaterial.useNormalMap);
-	//	ImGui::Checkbox("UseSpecularMap", &m_CBMaterial.useSpecularMap);
-	//	ImGui::ColorEdit4("Ambient", reinterpret_cast<float*>(&m_CBMaterial.ambient));
-	//	ImGui::ColorEdit4("Diffuse", reinterpret_cast<float*>(&m_CBMaterial.diffuse));
-	//	ImGui::ColorEdit4("Specular", reinterpret_cast<float*>(&m_CBMaterial.specular));
-	//	ImGui::SliderFloat("SpecularPower", &m_CBMaterial.specularPower, 0.f, 2000.f);
-
-	//	ImGui::End();
-	//}
-	}
 
 	{
 		ImGui::Begin("Properties");
@@ -268,6 +210,8 @@ void FBXSkeletalAnimation::CreateInputLayout()
 		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 		{"TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"BLENDINDICES", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"BLENDWEIGHTS", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 	// AlignedByteOffset 값을 D3D11_APPEND_ALIGNED_ELEMENT 로 지정하면 버퍼에 데이터가 어떻게 배열되는지를 자동으로 알아내도록 할 수 있다.
 
@@ -305,6 +249,15 @@ void FBXSkeletalAnimation::CreateConstantBuffer()
 	CBMaterialDesc.ByteWidth = sizeof(CB_Material);
 	CBMaterialDesc.CPUAccessFlags = 0;
 	// Material 상수 버퍼 생성
-	HRESULT hr;
 	HR_T(m_device->CreateBuffer(&CBMaterialDesc, nullptr, m_CBMaterialBuffer.GetAddressOf()));
+
+	// Matrix Palette 상수 버퍼 정보 생성
+	D3D11_BUFFER_DESC CBMatrixPaletteDesc;
+	ZeroMemory(&CBMatrixPaletteDesc, sizeof(CBMatrixPaletteDesc));
+	CBMatrixPaletteDesc.Usage = D3D11_USAGE_DEFAULT;
+	CBMatrixPaletteDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	CBMatrixPaletteDesc.ByteWidth = sizeof(CB_MatrixPalette);
+	CBMatrixPaletteDesc.CPUAccessFlags = 0;
+	// Matrix Palette 상수 버퍼 생성
+	HR_T(m_device->CreateBuffer(&CBMatrixPaletteDesc, nullptr, m_CBMatPaletteBuffer.GetAddressOf()));
 }
