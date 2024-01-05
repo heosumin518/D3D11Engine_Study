@@ -46,7 +46,7 @@ private:
 	float m_cameraFOV = 30.f;
 	float m_cameraNear = 0.01f;
 	float m_cameraFar = 500.0f;
-	Vector2 m_rotation = Vector2(0.0f, 0.0f);
+	Vector3 m_rotation = Vector3(0.0f, 0.0f, 0.0f);
 	float m_modelScale = 1.f;
 };
 

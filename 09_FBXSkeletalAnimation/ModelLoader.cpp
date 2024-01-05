@@ -145,7 +145,6 @@ void ModelLoader::CreateMesh(aiNode* node, shared_ptr<Node> connectNode)
 					{
 						if (node->m_name == bone->name)
 						{
-							/// TODO 23.01.03 여기 하던중임.
 							node->m_bone = bone;
 							bone->owner = node;
 						}

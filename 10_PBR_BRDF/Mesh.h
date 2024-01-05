@@ -12,7 +12,7 @@ public:
 	~Mesh();
 
 	void CreateVertexBuffer(ComPtr<ID3D11Device> device, vector<BoneWeightVertex>& vertices);
-	void CreateIndexBuffer(ComPtr<ID3D11Device> device, vector<WORD>& indices);
+	void CreateIndexBuffer(ComPtr<ID3D11Device> device, vector<UINT>& indices);
 
 public:
 	UINT GetIndexCount() const { return m_indexCount; }

@@ -16,18 +16,18 @@ PS_INPUT vs_main(VS_INPUT input)
     matWorld += mul(input.BlendWeights.w, MatrixPaletteArray[input.BlendIndices.w]);
     // 본을 사용하지 않는다면 matWorld = World;
 
-    //pos = mul(pos, World);
-    pos = mul(pos, matWorld);
+    pos = mul(pos, World);
+    //pos = mul(pos, matWorld);
 	output.PositionWorld = pos.xyz;
     
     pos = mul(pos, View);
     pos = mul(pos, Projection);
     output.PositionProj = pos;
     output.TexCoord = input.TexCoord;
-    //output.NormalWorld = normalize(mul(input.NormalModel, (float3x3) World)); // scale 있을수 있으므로 normalize필요
-    //output.TangentWorld = normalize(mul(input.TangentModel, (float3x3) World)); // scale 있을수 있으므로 normalize필요
-    output.NormalWorld = normalize(mul(input.NormalModel, (float3x3) matWorld)); 
-    output.TangentWorld = normalize(mul(input.TangentModel, (float3x3) matWorld));
+    output.NormalWorld = normalize(mul(input.NormalModel, (float3x3) World)); // scale 있을수 있으므로 normalize필요
+    output.TangentWorld = normalize(mul(input.TangentModel, (float3x3) World)); // scale 있을수 있으므로 normalize필요
+    //output.NormalWorld = normalize(mul(input.NormalModel, (float3x3) matWorld)); 
+    //output.TangentWorld = normalize(mul(input.TangentModel, (float3x3) matWorld));
 
     return output;
 }

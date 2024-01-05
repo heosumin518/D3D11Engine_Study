@@ -31,10 +31,10 @@ void PBRBRDF::Initialize()
 
 	// fbx 파일 로드하여 모델 생성
 	ModelLoader loader(m_device);
-	m_model = loader.LoadModelFile("../Resources/SkinningTest.fbx"); // GOSEGU
+	m_model = loader.LoadModelFile("../Resources/cerberus2.fbx"); // GOSEGU
 
 
-	GameProcessor::InitImGUI();
+ 	GameProcessor::InitImGUI();
 }
 
 void PBRBRDF::Update()
@@ -57,7 +57,7 @@ void PBRBRDF::Update()
 	// update cube
 	{
 		Matrix scale = Matrix::CreateScale(m_modelScale);
-		Matrix rotation = Matrix::CreateFromYawPitchRoll(Vector3(XMConvertToRadians(m_rotation.x), XMConvertToRadians(m_rotation.y), 0));
+		Matrix rotation = Matrix::CreateFromYawPitchRoll(Vector3(XMConvertToRadians(m_rotation.x), XMConvertToRadians(m_rotation.y), XMConvertToRadians(m_rotation.z)));
 		m_world = scale * rotation;
 		
 		m_CBModel.world = XMMatrixTranspose(m_world);
@@ -125,6 +125,8 @@ void PBRBRDF::Render()
 		m_deviceContext->PSSetShaderResources(2, 1, m_model->GetMaterials()[mi]->GetSpecularRV().GetAddressOf());
 		m_deviceContext->PSSetShaderResources(3, 1, m_model->GetMaterials()[mi]->GetEmissiveRV().GetAddressOf());
 		m_deviceContext->PSSetShaderResources(4, 1, m_model->GetMaterials()[mi]->GetOpacityRV().GetAddressOf());
+		m_deviceContext->PSSetShaderResources(5, 1, m_model->GetMaterials()[mi]->GetMetalnessRV().GetAddressOf());
+		m_deviceContext->PSSetShaderResources(6, 1, m_model->GetMaterials()[mi]->GetRoughnessRV().GetAddressOf());
 
 		m_CBMaterial.useDiffuseMap = m_model->GetMaterials()[mi]->GetDiffuseRV() != nullptr ? true : false;
 		m_CBMaterial.useNormalMap = m_model->GetMaterials()[mi]->GetNormalRV() != nullptr ? true : false;
@@ -145,7 +147,7 @@ void PBRBRDF::Render()
 		m_deviceContext->UpdateSubresource(m_CBTransformBuffer.Get(), 0, nullptr, &m_CBModel, 0, 0);
 		m_deviceContext->UpdateSubresource(m_CBMaterialBuffer.Get(), 0, nullptr, &m_CBMaterial, 0, 0);
 
-		m_deviceContext->IASetIndexBuffer(m_model->GetMeshes()[i]->GetIndexBuffer().Get(), DXGI_FORMAT_R16_UINT, 0);
+		m_deviceContext->IASetIndexBuffer(m_model->GetMeshes()[i]->GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
 		m_deviceContext->IASetVertexBuffers(
 			0, 1,
 			m_model->GetMeshes()[i]->GetVertexBuffer().GetAddressOf(),
@@ -175,7 +177,7 @@ void PBRBRDF::RenderImGUI()
 
 		ImGui::Text("Cube");
 		ImGui::SliderFloat("Scale", (float*)&m_modelScale, 1, 100);
-		ImGui::SliderFloat2("Rotation", (float*)&m_rotation, -180, 180);
+		ImGui::SliderFloat3("Rotation", (float*)&m_rotation, -180, 180);
 
 		ImGui::Text("Light");
 		ImGui::SliderFloat3("LightDirection", (float*)&m_CBLight.direction, -1.0f, 1.0f);

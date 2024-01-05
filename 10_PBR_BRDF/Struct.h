@@ -58,7 +58,7 @@ struct CB_DirectionLight
 	Vector4 direction = { 0.f, 0.f, 1.0f, 1.0f };
 	Vector4 ambient = { 0.1f, 0.1f, 0.1f, 0.1f };
 	Vector4 diffuse = { 1.f, 1.f, 1.f, 1.f };
-	Vector4 specular = { 0.6f, 0.6f, 0.6f, 0.6f };
+	Vector4 specular = { 0.6f, 0.6f, 0.6f, 0.6f };	// TODO : PBR 이니 이제 빼자 1
 	Vector3 eyePos;
 	float pad0;
 };
@@ -72,7 +72,7 @@ struct CB_Material
 	Vector4 diffuse = { 1.0f, 1.0f, 1.0f, 1.0f };
 	Vector4 specular = { 1.0f, 1.0f, 1.0f, 1.0f };
 	Vector4 emissive = { 1.0f, 1.0f, 1.0f, 1.0f };
-	float specularPower = 80.f;
+	float specularPower = 80.f;		// TODO : PBR 이니 이제 빼자 2
 	bool useDiffuseMap = true;
 	bool pad1[3];
 	bool useNormalMap = true;

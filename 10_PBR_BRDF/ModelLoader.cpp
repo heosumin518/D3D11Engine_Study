@@ -145,7 +145,6 @@ void ModelLoader::CreateMesh(aiNode* node, shared_ptr<Node> connectNode)
 					{
 						if (node->m_name == bone->name)
 						{
-							/// TODO 23.01.03 여기 하던중임.
 							node->m_bone = bone;
 							bone->owner = node;
 						}
@@ -168,12 +167,15 @@ void ModelLoader::CreateMesh(aiNode* node, shared_ptr<Node> connectNode)
 		mesh->CreateVertexBuffer(m_device, vertices);
 
 		// 인덱스 정보 생성
-		vector<WORD> indices;
+		vector<UINT> indices;
 		for (UINT f = 0; f < srcMesh->mNumFaces; f++)
 		{
-			indices.push_back(srcMesh->mFaces[f].mIndices[0]);
-			indices.push_back(srcMesh->mFaces[f].mIndices[1]);
-			indices.push_back(srcMesh->mFaces[f].mIndices[2]);
+			aiFace face = srcMesh->mFaces[f];
+
+			for (UINT i = 0; i < face.mNumIndices; i++)
+			{
+				indices.push_back(face.mIndices[i]);
+			}
 		}
 		mesh->CreateIndexBuffer(m_device, indices);
 
@@ -241,6 +243,20 @@ void ModelLoader::CreateMaterial()
 			path = ToWString(string(texturePath.C_Str()));
 			finalPath = basePath + path.filename().wstring();
 			HR_T(CreateTextureFromFile(m_device.Get(), finalPath.c_str(), material->m_opacityRV.GetAddressOf()));
+		}
+
+		if (AI_SUCCESS == srcMaterial->GetTexture(aiTextureType_METALNESS, 0, &texturePath))
+		{
+			path = ToWString(string(texturePath.C_Str()));
+			finalPath = basePath + path.filename().wstring();
+			HR_T(CreateTextureFromFile(m_device.Get(), finalPath.c_str(), material->m_metalnessRV.GetAddressOf()));
+		}
+
+		if (AI_SUCCESS == srcMaterial->GetTexture(aiTextureType_SHININESS, 0, &texturePath))
+		{
+			path = ToWString(string(texturePath.C_Str()));
+			finalPath = basePath + path.filename().wstring();
+			HR_T(CreateTextureFromFile(m_device.Get(), finalPath.c_str(), material->m_roughnessRV.GetAddressOf()));
 		}
 
 		m_materials.push_back(material);	
