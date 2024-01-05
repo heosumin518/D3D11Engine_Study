@@ -42,11 +42,11 @@ private:
 
 
 	// ImGUI 로 조절할 camera 변수 목록
-	Vector3 m_cameraPos = Vector3(0.0f, 300.0f, -1000.0f);
+	Vector3 m_cameraPos = Vector3(50.0f, 0.0f, -100.0f);
 	float m_cameraFOV = 30.f;
 	float m_cameraNear = 0.01f;
 	float m_cameraFar = 500.0f;
-	Vector3 m_rotation = Vector3(0.0f, 0.0f, 0.0f);
+	Vector3 m_rotation = Vector3(0.0f, 0.0f, 82.0f);
 	float m_modelScale = 1.f;
 };
 

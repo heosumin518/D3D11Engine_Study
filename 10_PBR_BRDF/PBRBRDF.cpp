@@ -133,6 +133,8 @@ void PBRBRDF::Render()
 		m_CBMaterial.useSpecularMap = m_model->GetMaterials()[mi]->GetSpecularRV() != nullptr ? true : false;
 		m_CBMaterial.useEmissiveMap = m_model->GetMaterials()[mi]->GetEmissiveRV() != nullptr ? true : false;
 		m_CBMaterial.useOpacityMap = m_model->GetMaterials()[mi]->GetOpacityRV() != nullptr ? true : false;
+		m_CBMaterial.useMetalnessMap = m_model->GetMaterials()[mi]->GetMetalnessRV() != nullptr ? true : false;
+		m_CBMaterial.useRoughnessMap = m_model->GetMaterials()[mi]->GetRoughnessRV() != nullptr ? true : false;
 
 		if (m_CBMaterial.useOpacityMap)
 			m_deviceContext->OMSetBlendState(m_blendState.Get(), nullptr, 0xffffffff);  // 알파블렌드 상태설정 , 다른옵션은 기본값
@@ -181,15 +183,8 @@ void PBRBRDF::RenderImGUI()
 
 		ImGui::Text("Light");
 		ImGui::SliderFloat3("LightDirection", (float*)&m_CBLight.direction, -1.0f, 1.0f);
-		ImGui::ColorEdit4("LightAmbient", (float*)&m_CBLight.ambient);
-		ImGui::ColorEdit4("LightDiffuse", (float*)&m_CBLight.diffuse);
-		ImGui::ColorEdit4("LightSpecular", (float*)&m_CBLight.specular);
 
 		ImGui::Text("Material");
-		ImGui::ColorEdit4("MaterialAmbient", (float*)&m_CBMaterial.ambient);
-		ImGui::ColorEdit4("MaterialDiffuse", (float*)&m_CBMaterial.diffuse);
-		ImGui::ColorEdit4("MaterialSpecular", (float*)&m_CBMaterial.specular);
-		ImGui::ColorEdit4("MaterialEmissive", (float*)&m_CBMaterial.emissive);
 		ImGui::SliderFloat("MaterialSpecularPower", (float*)&m_CBMaterial.specularPower, 2.0f, 4096.0f);
 
 		ImGui::Text("Camera");

@@ -55,12 +55,12 @@ static_assert((sizeof(CB_Transform) % 16) == 0,
 
 struct CB_DirectionLight
 {
-	Vector4 direction = { 0.f, 0.f, 1.0f, 1.0f };
-	Vector4 ambient = { 0.1f, 0.1f, 0.1f, 0.1f };
-	Vector4 diffuse = { 1.f, 1.f, 1.f, 1.f };
-	Vector4 specular = { 0.6f, 0.6f, 0.6f, 0.6f };	// TODO : PBR 이니 이제 빼자 1
-	Vector3 eyePos;
-	float pad0;
+	Vector3 direction = { 0.f, -1.f, 1.0f};
+	float pad0 = 0.f;
+	Vector3 radiance = { 1.f, 1.f, 1.f };
+	float pad1 = 0.f;
+	Vector3 eyePos = {};
+	float pad2 = 0.f;
 };
 
 static_assert((sizeof(CB_DirectionLight) % 16) == 0,
@@ -68,10 +68,6 @@ static_assert((sizeof(CB_DirectionLight) % 16) == 0,
 
 struct CB_Material
 {
-	Vector4 ambient = { 1.0f, 1.0f, 1.0f, 1.0f };
-	Vector4 diffuse = { 1.0f, 1.0f, 1.0f, 1.0f };
-	Vector4 specular = { 1.0f, 1.0f, 1.0f, 1.0f };
-	Vector4 emissive = { 1.0f, 1.0f, 1.0f, 1.0f };
 	float specularPower = 80.f;		// TODO : PBR 이니 이제 빼자 2
 	bool useDiffuseMap = true;
 	bool pad1[3];
@@ -83,7 +79,10 @@ struct CB_Material
 	bool pad4[3];
 	bool useOpacityMap = true;
 	bool pad5[3];
-	Vector2 pad6;
+	bool useMetalnessMap = true;
+	bool pad6[3];
+	bool useRoughnessMap = true;
+	bool pad7[3];
 };
 
 static_assert((sizeof(CB_Material) % 16) == 0,

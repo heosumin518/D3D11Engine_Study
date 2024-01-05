@@ -20,27 +20,24 @@ cbuffer Transform : register(b0)
 
 cbuffer DirectionLight : register(b1)
 {
-    float4 LightDirection;
-    float4 LightAmbient;
-    float4 LightDiffuse;
-    float4 LightSpecular;
-    float3 EyePosition;
+    float3 LightDirection;
+    float DirectionLightPad0;
+    float3 LightRadiance;
     float DirectionLightPad1;
+    float3 EyePosition;
+    float DirectionLightPad2;
 }
 
 cbuffer Material : register(b2)
 {
-    float4 MaterialAmbient;
-    float4 MaterialDiffuse;
-    float4 MaterialSpecular;
-    float4 MaterialEmissive;
     float MaterialSpecularPower;
     bool UseDiffuseMap;
     bool UseNormalMap;
     bool UseSpecularMap;
     bool UseEmissiveMap;
     bool UseOpacityMap;
-    float2 MaterialPad0;
+    bool UseMetalnessMap;
+    bool UseRoughnessMap;
 }
 
 cbuffer MatrixPalette : register(b3)
