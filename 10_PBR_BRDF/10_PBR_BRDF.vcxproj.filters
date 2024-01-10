@@ -81,7 +81,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="imgui.ini" />
     <None Include="Shared.hlsli">
       <Filter>Shader</Filter>
     </None>

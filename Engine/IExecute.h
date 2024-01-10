@@ -1,10 +1,12 @@
 #pragma once
 
-class IExecute
+namespace Engine
 {
-public:
-	virtual void Init() abstract;
-	virtual void Update() abstract;
-	virtual void Render() abstract;
-};
-
+	class IExecute
+	{
+	public:
+		virtual void Init() abstract;
+		virtual void Update() abstract;
+		virtual void Render() abstract;
+	};
+}

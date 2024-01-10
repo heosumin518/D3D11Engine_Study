@@ -1,28 +1,34 @@
 #include "pch.h"
 #include "TimeManager.h"
 
-void TimeManager::Init()
+void Engine::TimeManager::Init()
 {
-	::QueryPerformanceFrequency(reinterpret_cast<LARGE_INTEGER*>(&_frequency));
-	::QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&_prevCount)); // CPU 클럭
+	::QueryPerformanceFrequency(reinterpret_cast<LARGE_INTEGER*>(&m_frequency));
+	::QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&m_prevCount)); // CPU 클럭
 }
 
-void TimeManager::Update()
+void Engine::TimeManager::Update()
 {
-	uint64 currentCount;
+	uint64_t currentCount;
 	::QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&currentCount));
 
-	_deltaTime = (currentCount - _prevCount) / static_cast<float>(_frequency);
-	_prevCount = currentCount;
+	m_deltaTime = (currentCount - m_prevCount) / static_cast<float>(m_frequency);
+	m_prevCount = currentCount;
 
-	_frameCount++;
-	_frameTime += _deltaTime;
+	m_frameCount++;
+	m_frameTime += m_deltaTime;
 
-	if (_frameTime > 1.f)
+	if (m_frameTime > 1.f)
 	{
-		_fps = static_cast<uint32>(_frameCount / _frameTime);
+		m_fps = static_cast<uint32_t>(m_frameCount / m_frameTime);
 
-		_frameTime = 0.f;
-		_frameCount = 0;
+		m_frameTime = 0.f;
+		m_frameCount = 0;
 	}
+
+	// 만약에 중단점을 찍고 검사하는 디버깅 상태라면 시간이 흐르는 것을 방지하기 위해 만들어둔 전처리기
+#ifdef _DEBUG
+	if (m_deltaTime > (1. / 60.))
+		m_deltaTime = (1. / 60.);
+#endif
 }

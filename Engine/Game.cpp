@@ -1,24 +1,25 @@
 #include "pch.h"
 #include "Game.h"
-#include "IExecute.h"
 
-WPARAM Game::Run(GameDesc& desc)
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+WPARAM Engine::Game::Run(GameDesc& desc)
 {
-	_desc = desc;
-	assert(_desc.app != nullptr);
+	m_desc = desc;
+	assert(m_desc.app != nullptr);
 
-	// 1) 윈도우 창 정보 등록
+	// 윈도우 창 정보 등록
 	MyRegisterClass();
 
-	// 2) 윈도우 창 생성
+	// 윈도우 창 생성
 	if (!InitInstance(SW_SHOWNORMAL))
 		return FALSE;
-		
-	GRAPHICS->Init(_desc.hWnd);
+
+	GRAPHICS->Init(m_desc.hWnd);
 	TIME->Init();
-	INPUT->Init(_desc.hWnd);
-	
-	_desc.app->Init();
+
+
+	m_desc.app->Init();
 
 	MSG msg = { 0 };
 
@@ -38,8 +39,7 @@ WPARAM Game::Run(GameDesc& desc)
 	return msg.wParam;
 }
 
-
-ATOM Game::MyRegisterClass()
+ATOM Engine::Game::MyRegisterClass()
 {
 	WNDCLASSEXW wcex;
 
@@ -49,36 +49,74 @@ ATOM Game::MyRegisterClass()
 	wcex.lpfnWndProc = WndProc;
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
-	wcex.hInstance = _desc.hInstance;
+	wcex.hInstance = m_desc.hInstance;
 	wcex.hIcon = ::LoadIcon(NULL, IDI_WINLOGO);
 	wcex.hCursor = ::LoadCursor(nullptr, IDC_ARROW);
 	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 	wcex.lpszMenuName = NULL;
-	wcex.lpszClassName = _desc.appName.c_str();
+	wcex.lpszClassName = m_desc.appName.c_str();
 	wcex.hIconSm = wcex.hIcon;
 
 	return RegisterClassExW(&wcex);
 }
 
-BOOL Game::InitInstance(int cmdShow)
+BOOL Engine::Game::InitInstance(int cmdShow)
 {
-	RECT windowRect = { 0, 0, _desc.width, _desc.height };
+	RECT windowRect = RECT{ 0, 0, static_cast<LONG>(m_desc.width), static_cast<LONG>(m_desc.height) };
 	::AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, false);
 
-	_desc.hWnd = CreateWindowW(_desc.appName.c_str(), _desc.appName.c_str(), WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, 0, windowRect.right - windowRect.left, windowRect.bottom - windowRect.top, nullptr, nullptr, _desc.hInstance, nullptr);
+	m_desc.hWnd = CreateWindowW(
+		m_desc.appName.c_str(), m_desc.appName.c_str(),
+		WS_OVERLAPPEDWINDOW,
+		CW_USEDEFAULT, 0,
+		windowRect.right - windowRect.left, windowRect.bottom - windowRect.top,
+		nullptr, nullptr, 
+		m_desc.hInstance,
+		nullptr
+		);
 
-	if (!_desc.hWnd)
+	if (m_desc.hWnd)
 		return FALSE;
 
-	::ShowWindow(_desc.hWnd, cmdShow);
-	::UpdateWindow(_desc.hWnd);
+	::ShowWindow(m_desc.hWnd, cmdShow);
+	::UpdateWindow(m_desc.hWnd);
 
 	return TRUE;
 }
 
-LRESULT CALLBACK Game::WndProc(HWND handle, UINT message, WPARAM wParam, LPARAM lParam)
+void Engine::Game::Update()
 {
+	// 매니저 등등 업데이트
+
+	TIME->Update();
+
+	GRAPHICS->RenderBegin();
+
+#ifdef _DEBUG
+	ShowFPS();
+#endif
+
+	m_desc.app->Update();
+	m_desc.app->Render();
+
+	GRAPHICS->RenderEnd();
+}
+
+void Engine::Game::ShowFPS()
+{
+	uint32_t fps = GET_SINGLE(TimeManager)->GetFPS();
+
+	WCHAR text[100] = L"";
+	::wsprintf(text, L"FPS : %d", fps);
+
+	::SetWindowText(m_desc.hWnd, text);
+}
+
+LRESULT CALLBACK Engine::Game::WndProc(HWND handle, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	if (ImGui_ImplWin32_WndProcHandler(handle, message, wParam, lParam))
+		return true;
+
 	switch (message)
 	{
 	case WM_SIZE:
@@ -91,17 +129,3 @@ LRESULT CALLBACK Game::WndProc(HWND handle, UINT message, WPARAM wParam, LPARAM 
 		return ::DefWindowProc(handle, message, wParam, lParam);
 	}
 }
-
-void Game::Update()
-{
-	TIME->Update();
-	INPUT->Update();
-
-	GRAPHICS->RenderBegin();
-
-	_desc.app->Update();
-	_desc.app->Render();
-
-	GRAPHICS->RenderEnd();
-}
-

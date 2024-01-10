@@ -7,6 +7,7 @@ HWND WinApp::m_hWnd = nullptr;
 
 int WinApp::Run(GameProcessor* gameProcessor, HINSTANCE hInstance, int nCmdShow)
 {
+	// 윈도우 창 정보 등록
 	WNDCLASSEX windowClass = { 0 };
 	windowClass.cbSize = sizeof(WNDCLASSEX);
 	windowClass.style = CS_HREDRAW | CS_VREDRAW;
@@ -16,6 +17,7 @@ int WinApp::Run(GameProcessor* gameProcessor, HINSTANCE hInstance, int nCmdShow)
 	windowClass.lpszClassName = L"DefaultWindowClass";
 	RegisterClassExW(&windowClass);
 
+	// 윈도우 창 생성
 	RECT windowRect = { 0, 0, static_cast<LONG>(gameProcessor->GetWidth()), static_cast<LONG>(gameProcessor->GetHeight()) };
 	::AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, false);
 

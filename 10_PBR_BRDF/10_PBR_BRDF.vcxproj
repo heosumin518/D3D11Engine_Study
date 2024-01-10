@@ -162,7 +162,6 @@
     <ClInclude Include="Struct.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="imgui.ini" />
     <None Include="Shared.hlsli" />
   </ItemGroup>
   <ItemGroup>
