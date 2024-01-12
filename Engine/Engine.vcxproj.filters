@@ -25,6 +25,36 @@
     <ClInclude Include="RenderManager.h">
       <Filter>Manager</Filter>
     </ClInclude>
+    <ClInclude Include="ConstantBuffer.h">
+      <Filter>Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Bone.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Node.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="NodeAnimation.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelLoader.h">
+      <Filter>Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Helper.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Game.cpp">
@@ -45,6 +75,36 @@
     <ClCompile Include="RenderManager.cpp">
       <Filter>Manager</Filter>
     </ClCompile>
+    <ClCompile Include="ConstantBuffer.cpp">
+      <Filter>Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="Bone.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="Node.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="NodeAnimation.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelLoader.cpp">
+      <Filter>Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Helper.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Core">
@@ -56,5 +116,24 @@
     <Filter Include="Pipeline">
       <UniqueIdentifier>{59a8a29f-4fc4-4f2b-89fa-cba1a2439b6c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{dbaeee5b-bcdf-446d-a90f-5001e3eaba76}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{52efbb47-a2d7-4657-948f-fe8c74e02a9f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="PixelShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="VertexShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shared.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

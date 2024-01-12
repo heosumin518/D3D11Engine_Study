@@ -75,8 +75,8 @@ BOOL Engine::Game::InitInstance(int cmdShow)
 		nullptr
 		);
 
-	if (m_desc.hWnd)
-		return FALSE;
+	/*if (m_desc.hWnd)
+		return FALSE;*/
 
 	::ShowWindow(m_desc.hWnd, cmdShow);
 	::UpdateWindow(m_desc.hWnd);
@@ -86,7 +86,7 @@ BOOL Engine::Game::InitInstance(int cmdShow)
 
 void Engine::Game::Update()
 {
-	// 매니저 등등 업데이트
+	// TODO : 매니저 등등 업데이트
 
 	TIME->Update();
 

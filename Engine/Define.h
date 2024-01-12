@@ -19,4 +19,5 @@ public:										\
 #define DC			GRAPHICS->GetDeviceContext()
 #define TIME		GET_SINGLE(TimeManager)
 #define DT			TIME->GetDeltaTime()
+#define RENDER		GET_SINGLE(RenderManager)
 

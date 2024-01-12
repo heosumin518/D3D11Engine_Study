@@ -19,7 +19,6 @@ namespace Engine
 		void CreateDeviceAndSwapChain();
 		void CreateRenderTargetView();
 		void CreateDepthStencilView();
-		void CreateBlendState();
 		void SetViewport();
 
 	private:
@@ -36,9 +35,6 @@ namespace Engine
 		// Depth Stencil View
 		ComPtr<ID3D11Texture2D> m_depthStencilTexture;
 		ComPtr<ID3D11DepthStencilView> m_depthStencilView;
-
-		// Blend State
-		ComPtr<ID3D11BlendState> m_blendState;
 
 		// Misc
 		D3D11_VIEWPORT m_viewport = { 0 };

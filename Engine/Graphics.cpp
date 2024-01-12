@@ -8,7 +8,6 @@ void Engine::Graphics::Init(HWND hWnd)
 	CreateDeviceAndSwapChain();
 	CreateRenderTargetView();
 	CreateDepthStencilView();
-	CreateBlendState();		// TODO ? 이거 RenderManager에다가 만들기..?
 	SetViewport();
 }
 
@@ -115,28 +114,6 @@ void Engine::Graphics::CreateDepthStencilView()
 	}
 }
 
-// 알파블렌딩을 위한 블렌드 상태 생성
-void Engine::Graphics::CreateBlendState()
-{
-	D3D11_BLEND_DESC blendDesc = {};
-	blendDesc.AlphaToCoverageEnable = false;
-	blendDesc.IndependentBlendEnable = false;
-
-	D3D11_RENDER_TARGET_BLEND_DESC rtBlendDesc = {};
-	rtBlendDesc.BlendEnable = true; // 블렌드 사용 여부
-	// FinalRGB = SrcRGB *SrcBlend + DestRGB*DestBlend
-	rtBlendDesc.BlendOp = D3D11_BLEND_OP_ADD;
-	rtBlendDesc.SrcBlend = D3D11_BLEND_SRC_ALPHA;	// SrcBlend는 SrcColor의 알파값
-	rtBlendDesc.DestBlend = D3D11_BLEND_INV_SRC_ALPHA;	// DestBlend는 (1-SourceColor.a)
-	// FinalAlpha = (SrcAlpha * SrcBlendAlpha) + (DestAlpha * DestBlendAlpha)
-	rtBlendDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;
-	rtBlendDesc.SrcBlendAlpha = D3D11_BLEND_ONE;	// SrcBlendAlpha = 1
-	rtBlendDesc.DestBlendAlpha = D3D11_BLEND_ONE;	// DestBlendAlpha = 1	
-	rtBlendDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL; // 렌더타겟에 RGBA 모두 Write
-	blendDesc.RenderTarget[0] = rtBlendDesc;
-
-	CHECK(m_device->CreateBlendState(&blendDesc, m_blendState.GetAddressOf()));
-}
 
 void Engine::Graphics::SetViewport()
 {
