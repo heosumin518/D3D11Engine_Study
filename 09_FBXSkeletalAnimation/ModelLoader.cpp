@@ -132,7 +132,7 @@ void ModelLoader::CreateMesh(aiNode* node, shared_ptr<Node> connectNode)
 				{
 					shared_ptr<Bone> bone = make_shared<Bone>();
 
-					// Map bone name to bone Index
+					// Map bone m_name to bone Index
 					boneIndex = boneIndexCounter;
 					boneIndexCounter++;
 
@@ -205,7 +205,7 @@ void ModelLoader::CreateMaterial()
 		shared_ptr<Material> material = make_shared<Material>();
 		aiMaterial* srcMaterial = m_scene->mMaterials[i];
 
-		material->name = srcMaterial->GetName().C_Str();
+		material->m_name = srcMaterial->GetName().C_Str();
 
 		if (AI_SUCCESS == srcMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath))
 		{

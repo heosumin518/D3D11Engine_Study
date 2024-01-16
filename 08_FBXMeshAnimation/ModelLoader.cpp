@@ -147,7 +147,7 @@ void ModelLoader::CreateMaterial()
 		shared_ptr<Material> material = make_shared<Material>();
 		aiMaterial* srcMaterial = m_scene->mMaterials[i];
 
-		material->name = srcMaterial->GetName().C_Str();
+		material->m_name = srcMaterial->GetName().C_Str();
 
 		if (AI_SUCCESS == srcMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath))
 		{

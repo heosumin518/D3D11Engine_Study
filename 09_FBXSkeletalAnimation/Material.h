@@ -18,7 +18,7 @@ private:
 	friend ModelLoader;
 	friend Model;
 
-	string name;
+	string m_name;
 
 	// Shader Resource View
 	ComPtr<ID3D11ShaderResourceView> m_diffuseRV = nullptr;		// diffuse ¸®¼Ò½º ºä
