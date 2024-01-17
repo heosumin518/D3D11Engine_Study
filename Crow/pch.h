@@ -68,7 +68,7 @@ public:										\
 
 #include "Types.h"
 #include "Values.h"
-//#include "Structs.h"
+#include "Define.h"
 #include "Helper.h"
 
 #include "TimeSystem.h"

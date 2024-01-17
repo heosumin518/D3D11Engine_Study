@@ -2,6 +2,8 @@
 #include "ModelLoader.h"
 #include "Model.h"
 #include "Mesh.h"
+#include "StaticMesh.h"
+#include "SkeletalMesh.h"
 #include "Node.h"
 #include "Bone.h"
 #include "Material.h"
@@ -66,7 +68,11 @@ void ModelLoader::CreateNode(shared_ptr<Model> model, aiNode* srcNode, shared_pt
 		model->m_rootNode = node;
 
 	// Mesh
-	CreateMesh(srcNode, node);
+	//CreateMesh(srcNode, node);
+	if (m_scene->mMeshes[0]->HasBones())
+		CreateSkeletalMesh(srcNode, node);
+	else
+		CreateStaticMesh(srcNode, node);
 
 	// 재귀 함수
 	for (UINT i = 0; i < srcNode->mNumChildren; i++)
@@ -81,6 +87,181 @@ void ModelLoader::CreateMesh(aiNode* node, shared_ptr<Node> connectNode)
 		return;
 
 	shared_ptr<Mesh> mesh = make_shared<Mesh>();
+
+	for (UINT i = 0; i < node->mNumMeshes; i++)
+	{
+		UINT index = node->mMeshes[i];
+		const aiMesh* srcMesh = m_scene->mMeshes[index];
+		mesh->m_name = srcMesh->mName.C_Str();
+
+		// 버텍스 정보 생성
+		vector<BoneWeightVertex> vertices;
+		for (UINT v = 0; v < srcMesh->mNumVertices; v++)
+		{
+			// Vertex
+			BoneWeightVertex vertex;
+			::memcpy(&vertex.position, &srcMesh->mVertices[v], sizeof(srcMesh->mVertices[v]));
+
+			// UV
+			if (srcMesh->HasTextureCoords(0))
+				::memcpy(&vertex.uv, &srcMesh->mTextureCoords[0][v], sizeof(Vector2));
+
+			// Normal
+			if (srcMesh->HasNormals())
+				::memcpy(&vertex.normal, &srcMesh->mNormals[v], sizeof(srcMesh->mNormals[v]));
+
+			// Tangent
+			if (srcMesh->HasTangentsAndBitangents())
+				::memcpy(&vertex.tangent, &srcMesh->mTangents[v], sizeof(srcMesh->mTangents[v]));
+
+			vertices.push_back(vertex);
+		}
+
+		// 메시 본 가져오기
+		if (srcMesh->HasBones())
+		{
+			// 메쉬와 연결된 본들을 처리
+			UINT boneIndexCounter = 0;
+			map<string, int> boneMapping;
+
+			for (int i = 0; i < m_bones.size(); i++)
+				boneMapping.insert(make_pair(m_bones[i]->name, i));
+
+			// 본 갯수만큼 본 생성
+			for (UINT i = 0; i < srcMesh->mNumBones; i++)
+			{
+				aiBone* srcBone = srcMesh->mBones[i];
+				UINT boneIndex = 0;
+
+				// 매핑이 아직 안되어있다면
+				if (boneMapping.find(srcBone->mName.C_Str()) == boneMapping.end())
+				{
+					shared_ptr<Bone> bone = make_shared<Bone>();
+
+					// Map bone m_name to bone Index
+					boneIndex = boneIndexCounter;
+					boneIndexCounter++;
+
+					bone->name = srcBone->mName.C_Str();
+					bone->numWeights = srcBone->mNumWeights;
+					bone->offsetMatrix = Matrix(&srcBone->mOffsetMatrix.a1).Transpose();
+
+					// 노드에 본지정 및 본에 노드 지정
+					for (auto& node : m_nodes)
+					{
+						if (node->m_name == bone->name)
+						{
+							node->m_bone = bone;
+							bone->owner = node;
+						}
+					}
+					m_bones.push_back(bone);
+				}
+				else
+					boneIndex = boneMapping[srcBone->mName.C_Str()];
+
+				// 본과 연결된 버텍스들을 처리
+				for (UINT j = 0; j < srcBone->mNumWeights; j++)
+				{
+					UINT vertexID = srcBone->mWeights[j].mVertexId;
+					float weight = srcBone->mWeights[j].mWeight;
+					vertices[vertexID].AddBoneData(boneIndex, weight);
+				}
+			}
+		}
+
+		mesh->CreateVertexBuffer(m_device, vertices);
+
+		// 인덱스 정보 생성
+		vector<UINT> indices;
+		for (UINT f = 0; f < srcMesh->mNumFaces; f++)
+		{
+			aiFace face = srcMesh->mFaces[f];
+
+			for (UINT i = 0; i < face.mNumIndices; i++)
+			{
+				indices.push_back(face.mIndices[i]);
+			}
+		}
+		mesh->CreateIndexBuffer(m_device, indices);
+
+		mesh->m_materialIndex = srcMesh->mMaterialIndex;
+	}
+
+	// 노드에 메쉬 연결
+	connectNode->m_mesh = mesh;
+
+	mesh->m_connectedNode = connectNode;
+	m_meshes.push_back(mesh);
+}
+
+shared_ptr<StaticMesh> ModelLoader::CreateStaticMesh(aiNode* node, shared_ptr<Node> connectNode)
+{
+	if (node->mNumMeshes < 1)
+		return nullptr;
+
+	shared_ptr<StaticMesh> mesh = make_shared<StaticMesh>();
+
+	for (UINT i = 0; i < node->mNumMeshes; i++)
+	{
+		UINT index = node->mMeshes[i];
+		const aiMesh* srcMesh = m_scene->mMeshes[index];
+		mesh->m_name = srcMesh->mName.C_Str();
+
+		// 버텍스 정보 생성
+		vector<Vertex> vertices;
+		for (UINT v = 0; v < srcMesh->mNumVertices; v++)
+		{
+			// Vertex
+			Vertex vertex;
+			::memcpy(&vertex.position, &srcMesh->mVertices[v], sizeof(srcMesh->mVertices[v]));
+
+			// UV
+			if (srcMesh->HasTextureCoords(0))
+				::memcpy(&vertex.uv, &srcMesh->mTextureCoords[0][v], sizeof(Vector2));
+
+			// Normal
+			if (srcMesh->HasNormals())
+				::memcpy(&vertex.normal, &srcMesh->mNormals[v], sizeof(srcMesh->mNormals[v]));
+
+			// Tangent
+			if (srcMesh->HasTangentsAndBitangents())
+				::memcpy(&vertex.tangent, &srcMesh->mTangents[v], sizeof(srcMesh->mTangents[v]));
+
+			vertices.push_back(vertex);
+		}
+		mesh->CreateVertexBuffer(m_device, vertices);
+
+		// 인덱스 정보 생성
+		vector<UINT> indices;
+		for (UINT f = 0; f < srcMesh->mNumFaces; f++)
+		{
+			aiFace face = srcMesh->mFaces[f];
+
+			for (UINT i = 0; i < face.mNumIndices; i++)
+			{
+				indices.push_back(face.mIndices[i]);
+			}
+		}
+		mesh->CreateIndexBuffer(m_device, indices);
+
+		// 메쉬에 머터리얼 연결.
+		mesh->m_materialIndex = srcMesh->mMaterialIndex;
+	}
+
+	// 노드에 메쉬 연결
+	connectNode->m_mesh = mesh;
+
+	mesh->m_connectedNode = connectNode;
+	m_meshes.push_back(mesh);
+}
+
+shared_ptr<SkeletalMesh> ModelLoader::CreateSkeletalMesh(aiNode* node, shared_ptr<Node> connectNode)
+{
+	if (node->mNumMeshes < 1)
+		return nullptr;
+
+	shared_ptr<SkeletalMesh> mesh = make_shared<SkeletalMesh>();
 
 	for (UINT i = 0; i < node->mNumMeshes; i++)
 	{

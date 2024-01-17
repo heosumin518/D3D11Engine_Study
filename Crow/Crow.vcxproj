@@ -157,6 +157,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Define.h" />
     <ClInclude Include="Helper.h" />
     <ClInclude Include="GameProcessor.h" />
     <ClInclude Include="Structs.h" />

@@ -10,24 +10,6 @@ Mesh::~Mesh()
 {
 }
 
-void Mesh::CreateVertexBuffer(ComPtr<ID3D11Device> device, vector<BoneWeightVertex>& vertices)
-{
-	m_vertexBufferStride = sizeof(BoneWeightVertex);
-	m_vertexBufferOffset = 0;
-	m_vertexCount = vertices.size();
-
-	D3D11_BUFFER_DESC desc;
-	ZeroMemory(&desc, sizeof(desc));
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	desc.ByteWidth = m_vertexBufferStride * vertices.size();
-	desc.CPUAccessFlags = 0;
-
-	D3D11_SUBRESOURCE_DATA data;
-	ZeroMemory(&data, sizeof(data));
-	data.pSysMem = vertices.data();
-	HR_T(device->CreateBuffer(&desc, &data, m_vertexBuffer.GetAddressOf()));
-}
 
 void Mesh::CreateIndexBuffer(ComPtr<ID3D11Device> device, vector<UINT>& indices)
 {

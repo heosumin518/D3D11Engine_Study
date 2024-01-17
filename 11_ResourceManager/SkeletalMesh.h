@@ -1,5 +1,8 @@
 #pragma once
-class SkeletalMesh
+#include "Mesh.h"
+
+class SkeletalMesh : public Mesh
 {
+
 };
 
